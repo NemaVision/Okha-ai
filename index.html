@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okha.ai - Get More Customers with a Better Website</title>
+    <meta name="description" content="Get a free website audit and discover how to attract more customers. We fix the problems that keep small businesses from growing online.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">Okha.ai</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="how-it-works.html">How It Works</a></li>
+                <li><a href="what-we-fix.html">What We Fix</a></li>
+                <li><a href="sample-report.html">Sample Report</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+                <li><a href="success-stories.html">Success Stories</a></li>
+            </ul>
+            <div class="language-switcher">
+                <a href="index.html" style="font-weight: bold;">English</a> | <a href="es/index.html">Español</a>
+            </div>
+            <button class="mobile-menu">☰</button>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Is Your Website Losing You Customers?</h1>
+                <p>Most small business websites have problems that drive customers away. Get a free audit and discover exactly what's keeping you from getting more leads, sales, and customers.</p>
+                <a href="#audit-form" class="btn btn-primary btn-large">Get My Free Website Audit</a>
+            </div>
+        </section>
+
+        <section class="audit-form" id="audit-form">
+            <div class="container">
+                <div class="form-container">
+                    <h2>Get Your Free Website Audit</h2>
+                    <p style="text-align: center; margin-bottom: 2rem;">Tell us about your business and we'll send you a detailed report showing exactly what's wrong with your website and how to fix it.</p>
+                    
+                    <div class="error-message"></div>
+                    <div class="success-message"></div>
+                    
+                    <form id="auditForm">
+                        <div class="form-group">
+                            <label for="businessName">Business Name *</label>
+                            <input type="text" id="businessName" name="businessName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="website">Your Website URL *</label>
+                            <input type="url" id="website" name="website" placeholder="https://yourwebsite.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="firstName">Your First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Your Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Your Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Your Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="businessType">What Type of Business Do You Run? *</label>
+                            <select id="businessType" name="businessType" required>
+                                <option value="">Select your business type</option>
+                                <option value="restaurant">Restaurant/Food Service</option>
+                                <option value="retail">Retail Store</option>
+                                <option value="professional-services">Professional Services (Law, Accounting, etc.)</option>
+                                <option value="healthcare">Healthcare/Medical</option>
+                                <option value="home-services">Home Services (Plumbing, HVAC, etc.)</option>
+                                <option value="beauty-wellness">Beauty/Wellness</option>
+                                <option value="fitness">Fitness/Gym</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="automotive">Automotive</option>
+                                <option value="education">Education/Training</option>
+                                <option value="nonprofit">Non-Profit</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mainGoal">What's Your Main Goal for Your Website? *</label>
+                            <select id="mainGoal" name="mainGoal" required>
+                                <option value="">Select your main goal</option>
+                                <option value="more-customers">Get more customers/clients</option>
+                                <option value="increase-sales">Increase online sales</option>
+                                <option value="generate-leads">Generate more leads</option>
+                                <option value="phone-calls">Get more phone calls</option>
+                                <option value="appointments">Book more appointments</option>
+                                <option value="brand-awareness">Increase brand awareness</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="currentProblem">What's the biggest problem with your current website?</label>
+                            <textarea id="currentProblem" name="currentProblem" placeholder="Not getting enough visitors, looks outdated, hard to use, not mobile-friendly, etc."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monthlyVisitors">About how many visitors does your website get per month?</label>
+                            <select id="monthlyVisitors" name="monthlyVisitors">
+                                <option value="">I'm not sure</option>
+                                <option value="0-100">Less than 100</option>
+                                <option value="100-500">100-500</option>
+                                <option value="500-1000">500-1,000</option>
+                                <option value="1000-5000">1,000-5,000</option>
+                                <option value="5000-10000">5,000-10,000</option>
+                                <option value="10000+">More than 10,000</option>
+                            </select>
+                        </div>
+
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Analyzing your website...</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;">
+                            Get My Free Website Audit
+                        </button>
+
+                        <p style="font-size: 0.9rem; color: #666; text-align: center; margin-top: 1rem;">
+                            We'll email you a detailed report within 24 hours. No spam, ever.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2>Why Small Businesses Choose Okha.ai</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>We Find What's Wrong</h3>
+                        <p>Our detailed audit reveals exactly what's preventing your website from getting you more customers - from technical issues to design problems.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💡</div>
+                        <h3>We Give You Solutions</h3>
+                        <p>Every problem we find comes with clear, actionable steps to fix it. No technical jargon - just simple explanations you can understand.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h3>You Get More Customers</h3>
+                        <p>When you fix these issues, more people find your website, stay longer, and contact you. It's that simple.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2>Is Your Website Actually Helping Your Business?</h2>
+                <p>Most small business owners think their website is fine. But the truth is, most websites have serious problems that drive customers away:</p>
+                
+                <ul>
+                    <li><strong>Takes too long to load</strong> - People leave if your site doesn't load in 3 seconds</li>
+                    <li><strong>Doesn't work on phones</strong> - Over 60% of people use mobile devices</li>
+                    <li><strong>Hard to find on Google</strong> - Poor SEO means no visitors</li>
+                    <li><strong>Confusing navigation</strong> - People can't find what they're looking for</li>
+                    <li><strong>No clear call-to-action</strong> - Visitors don't know what to do next</li>
+                    <li><strong>Looks unprofessional</strong> - Outdated design makes you look unreliable</li>
+                    <li><strong>Missing contact information</strong> - People can't reach you easily</li>
+                </ul>
+
+                <p>These problems cost you customers every single day. But here's the good news: they're all fixable.</p>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="#audit-form" class="btn btn-primary btn-large">Find Out What's Wrong With Your Website</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <h2>Ready to Stop Losing Customers?</h2>
+                <p>Get your free website audit today and discover exactly what's keeping your business from growing online.</p>
+                <a href="#audit-form" class="btn btn-large">Get My Free Audit Now</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Okha.ai. All rights reserved. | <a href="mailto:hello@okha.ai" style="color: white;">hello@okha.ai</a></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

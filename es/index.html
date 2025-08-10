@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okha.ai - Su Sitio Web Debería Traerle Más Clientes</title>
+    <meta name="description" content="Obtenga una auditoría gratuita de su sitio web y descubra cómo atraer más clientes. Arreglamos los problemas que impiden que los pequeños negocios crezcan en línea.">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">Okha.ai</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="about.html">Acerca de</a></li>
+                <li><a href="how-it-works.html">Cómo Funciona</a></li>
+                <li><a href="what-we-fix.html">Qué Arreglamos</a></li>
+                <li><a href="sample-report.html">Reporte Ejemplo</a></li>
+                <li><a href="pricing.html">Precios</a></li>
+                <li><a href="success-stories.html">Casos de Éxito</a></li>
+            </ul>
+            <div class="language-switcher">
+                <a href="../index.html">English</a> | <a href="index.html" style="font-weight: bold;">Español</a>
+            </div>
+            <button class="mobile-menu">☰</button>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>¿Su Sitio Web Le Está Perdiendo Clientes?</h1>
+                <p>La mayoría de los sitios web de pequeños negocios tienen problemas que alejan a los clientes. Obtenga una auditoría gratuita y descubra exactamente qué le impide conseguir más contactos, ventas y clientes.</p>
+                <a href="#audit-form" class="btn btn-primary btn-large">Obtenga Mi Auditoría Gratuita del Sitio Web</a>
+            </div>
+        </section>
+
+        <section class="audit-form" id="audit-form">
+            <div class="container">
+                <div class="form-container">
+                    <h2>Obtenga Su Auditoría Gratuita del Sitio Web</h2>
+                    <p style="text-align: center; margin-bottom: 2rem;">Cuéntenos sobre su negocio y le enviaremos un reporte detallado que muestra exactamente qué está mal con su sitio web y cómo arreglarlo.</p>
+                    
+                    <div class="error-message"></div>
+                    <div class="success-message"></div>
+                    
+                    <form id="auditForm">
+                        <div class="form-group">
+                            <label for="businessName">Nombre del Negocio *</label>
+                            <input type="text" id="businessName" name="businessName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="website">URL de Su Sitio Web *</label>
+                            <input type="url" id="website" name="website" placeholder="https://susitio.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="firstName">Su Nombre *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Su Apellido *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Su Correo Electrónico *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Su Número de Teléfono</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="businessType">¿Qué Tipo de Negocio Tiene? *</label>
+                            <select id="businessType" name="businessType" required>
+                                <option value="">Seleccione su tipo de negocio</option>
+                                <option value="restaurant">Restaurante/Servicio de Comida</option>
+                                <option value="retail">Tienda/Comercio</option>
+                                <option value="professional-services">Servicios Profesionales (Abogado, Contador, etc.)</option>
+                                <option value="healthcare">Salud/Médico</option>
+                                <option value="home-services">Servicios para el Hogar (Plomería, HVAC, etc.)</option>
+                                <option value="beauty-wellness">Belleza/Bienestar</option>
+                                <option value="fitness">Gimnasio/Fitness</option>
+                                <option value="real-estate">Bienes Raíces</option>
+                                <option value="automotive">Automotriz</option>
+                                <option value="education">Educación/Capacitación</option>
+                                <option value="nonprofit">Organización sin Fines de Lucro</option>
+                                <option value="other">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mainGoal">¿Cuál es Su Principal Objetivo para Su Sitio Web? *</label>
+                            <select id="mainGoal" name="mainGoal" required>
+                                <option value="">Seleccione su objetivo principal</option>
+                                <option value="more-customers">Conseguir más clientes</option>
+                                <option value="increase-sales">Aumentar las ventas en línea</option>
+                                <option value="generate-leads">Generar más contactos</option>
+                                <option value="phone-calls">Recibir más llamadas telefónicas</option>
+                                <option value="appointments">Conseguir más citas</option>
+                                <option value="brand-awareness">Aumentar el conocimiento de marca</option>
+                                <option value="other">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="currentProblem">¿Cuál es el mayor problema con su sitio web actual?</label>
+                            <textarea id="currentProblem" name="currentProblem" placeholder="No recibe suficientes visitantes, se ve desactualizado, difícil de usar, no es compatible con móviles, etc."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monthlyVisitors">¿Aproximadamente cuántos visitantes recibe su sitio web por mes?</label>
+                            <select id="monthlyVisitors" name="monthlyVisitors">
+                                <option value="">No estoy seguro</option>
+                                <option value="0-100">Menos de 100</option>
+                                <option value="100-500">100-500</option>
+                                <option value="500-1000">500-1,000</option>
+                                <option value="1000-5000">1,000-5,000</option>
+                                <option value="5000-10000">5,000-10,000</option>
+                                <option value="10000+">Más de 10,000</option>
+                            </select>
+                        </div>
+
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Analizando su sitio web...</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;">
+                            Obtener Mi Auditoría Gratuita del Sitio Web
+                        </button>
+
+                        <p style="font-size: 0.9rem; color: #666; text-align: center; margin-top: 1rem;">
+                            Le enviaremos un reporte detallado por correo electrónico en 24 horas. Sin spam, nunca.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2>Por Qué los Pequeños Negocios Eligen Okha.ai</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Encontramos Qué Está Mal</h3>
+                        <p>Nuestra auditoría detallada revela exactamente qué está impidiendo que su sitio web le consiga más clientes - desde problemas técnicos hasta problemas de diseño.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💡</div>
+                        <h3>Le Damos Soluciones</h3>
+                        <p>Cada problema que encontramos viene con pasos claros y accionables para arreglarlo. Sin jerga técnica - solo explicaciones simples que puede entender.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h3>Usted Consigue Más Clientes</h3>
+                        <p>Cuando arregla estos problemas, más personas encuentran su sitio web, se quedan más tiempo y lo contactan. Es así de simple.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <h2>¿Su Sitio Web Realmente Está Ayudando a Su Negocio?</h2>
+                <p>La mayoría de los dueños de pequeños negocios piensan que su sitio web está bien. Pero la verdad es que la mayoría de los sitios web tienen problemas serios que alejan a los clientes:</p>
+                
+                <ul>
+                    <li><strong>Tarda demasiado en cargar</strong> - Las personas se van si su sitio no carga en 3 segundos</li>
+                    <li><strong>No funciona en teléfonos</strong> - Más del 60% de las personas usan dispositivos móviles</li>
+                    <li><strong>Difícil de encontrar en Google</strong> - SEO pobre significa ningún visitante</li>
+                    <li><strong>Navegación confusa</strong> - Las personas no pueden encontrar lo que buscan</li>
+                    <li><strong>Sin llamada a la acción clara</strong> - Los visitantes no saben qué hacer después</li>
+                    <li><strong>Se ve poco profesional</strong> - El diseño desactualizado lo hace ver poco confiable</li>
+                    <li><strong>Falta información de contacto</strong> - Las personas no pueden contactarlo fácilmente</li>
+                </ul>
+
+                <p>Estos problemas le cuestan clientes todos los días. Pero aquí están las buenas noticias: todos se pueden arreglar.</p>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="#audit-form" class="btn btn-primary btn-large">Descubra Qué Está Mal Con Su Sitio Web</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <h2>¿Listo Para Dejar de Perder Clientes?</h2>
+                <p>Obtenga su auditoría gratuita del sitio web hoy y descubra exactamente qué está impidiendo que su negocio crezca en línea.</p>
+                <a href="#audit-form" class="btn btn-large">Obtener Mi Auditoría Gratuita Ahora</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Okha.ai. Todos los derechos reservados. | <a href="mailto:hola@okha.ai" style="color: white;">hola@okha.ai</a></p>
+        </div>
+    </footer>
+
+    <script src="../script.js"></script>
+</body>
+</html>
