@@ -566,6 +566,14 @@ main {
     background-clip: text;
 }
 
+/* Global list resets */
+ul, ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Content section base styles */
 .content-section ul {
     margin-bottom: var(--space-lg);
 }
@@ -573,18 +581,54 @@ main {
 .content-section li {
     margin-bottom: var(--space-sm);
     font-size: 1.125rem;
-    position: relative;
-    padding-left: var(--space-lg);
 }
 
-.content-section li::before {
+/* Checkmark lists - only where specifically needed */
+.checkmark-list {
+    list-style: none;
+}
+
+.checkmark-list li {
+    position: relative;
+    padding-left: var(--space-xl);
+    margin-bottom: var(--space-md);
+    font-size: 1.125rem;
+    line-height: 1.6;
+}
+
+.checkmark-list li::before {
     content: '✓';
     position: absolute;
     left: 0;
     top: 0;
     color: var(--success-color);
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    line-height: 1.6;
+}
+
+/* Regular lists without any decoration */
+.plain-list {
+    list-style: none;
+}
+
+.plain-list li {
+    margin-bottom: var(--space-md);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    padding-left: 0;
+}
+
+/* Features lists for feature cards */
+.feature-list {
+    list-style: none;
+}
+
+.feature-list li {
+    margin-bottom: var(--space-sm);
+    font-size: 1rem;
+    line-height: 1.6;
+    padding-left: 0;
 }
 
 /* Testimonials */
@@ -706,6 +750,18 @@ main {
 .pricing-features li {
     padding: var(--space-sm) 0;
     border-bottom: 1px solid var(--gray-200);
+    font-size: 1rem;
+    position: relative;
+    padding-left: var(--space-lg);
+}
+
+.pricing-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: var(--space-sm);
+    color: var(--success-color);
+    font-weight: 700;
     font-size: 1rem;
 }
 
