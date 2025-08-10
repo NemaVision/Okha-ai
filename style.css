@@ -566,6 +566,14 @@ main {
     background-clip: text;
 }
 
+.content-section h1 + p {
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: var(--space-xl);
+}
+
 /* Global list resets */
 ul, ol {
     list-style: none;
