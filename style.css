@@ -706,19 +706,22 @@ ul, ol {
     border-color: var(--primary-color);
     transform: scale(1.05);
     box-shadow: var(--shadow-2xl);
+    margin-top: var(--space-lg);
 }
 
 .pricing-card.featured::after {
     content: 'Most Popular';
     position: absolute;
-    top: var(--space-md);
-    right: var(--space-md);
+    top: calc(-1 * var(--space-sm));
+    right: var(--space-lg);
     background: var(--primary-gradient);
     color: var(--white);
     padding: var(--space-xs) var(--space-md);
     border-radius: var(--radius-full);
     font-size: 0.875rem;
     font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
 }
 
 .pricing-card:hover {
@@ -961,6 +964,14 @@ footer a:hover {
     
     .pricing-card.featured {
         transform: none;
+        margin-top: var(--space-md);
+    }
+    
+    .pricing-card.featured::after {
+        top: calc(-1 * var(--space-xs));
+        right: var(--space-md);
+        font-size: 0.8rem;
+        padding: calc(var(--space-xs) * 0.75) var(--space-sm);
     }
 }
 
