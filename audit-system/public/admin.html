@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okha.ai CRM Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #2d3748;
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 2rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-menu a {
+            color: #e2e8f0;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            display: block;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: #4a5568;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #2d3748;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .refresh-btn:hover {
+            background: #5a67d8;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .stat-change.positive {
+            color: #38a169;
+        }
+
+        .stat-change.negative {
+            color: #e53e3e;
+        }
+
+        /* Status Tabs */
+        .status-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .status-tab {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #718096;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .status-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* Search and Filters */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box,
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            min-width: 120px;
+        }
+
+        /* Leads Table */
+        .leads-container {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .leads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leads-table th,
+        .leads-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .leads-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .leads-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .lead-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .lead-business {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .health-score {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .health-score.excellent {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .health-score.good {
+            background: #faf089;
+            color: #744210;
+        }
+
+        .health-score.poor {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef5e7;
+            color: #c05621;
+        }
+
+        .status-active {
+            background: #e6fffa;
+            color: #00a3c4;
+        }
+
+        .status-converted {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .status-archived {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .engagement-indicator {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+
+        .engagement-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .engagement-dot.active {
+            background: #38a169;
+        }
+
+        .engagement-dot.inactive {
+            background: #e2e8f0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .leads-table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">Okha.ai CRM</div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#" class="nav-link active" data-section="overview">📊 Overview</a></li>
+                    <li><a href="#" class="nav-link" data-section="leads">👥 Leads</a></li>
+                    <li><a href="#" class="nav-link" data-section="analytics">📈 Analytics</a></li>
+                    <li><a href="#" class="nav-link" data-section="settings">⚙️ Settings</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1 id="section-title">Dashboard Overview</h1>
+                <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+            </header>
+
+            <!-- Overview Section -->
+            <div id="overview-section" class="content-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-leads">-</div>
+                        <div class="stat-label">Total Leads</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pending-leads">-</div>
+                        <div class="stat-label">Pending Leads</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="active-prospects">-</div>
+                        <div class="stat-label">Active Prospects</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="converted-clients">-</div>
+                        <div class="stat-label">Converted Clients</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="conversion-rate">-</div>
+                        <div class="stat-label">Conversion Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="monthly-revenue">-</div>
+                        <div class="stat-label">Monthly Revenue</div>
+                    </div>
+                </div>
+
+                <div class="leads-container">
+                    <h3 style="padding: 1.5rem; margin: 0; border-bottom: 1px solid #e2e8f0;">Recent Activity</h3>
+                    <div id="recent-activity" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading recent activity...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leads Section -->
+            <div id="leads-section" class="content-section" style="display: none;">
+                <div class="status-tabs">
+                    <button class="status-tab active" data-status="pending">Pending Leads</button>
+                    <button class="status-tab" data-status="active">Active Prospects</button>
+                    <button class="status-tab" data-status="converted">Converted Clients</button>
+                    <button class="status-tab" data-status="archived">Archived</button>
+                </div>
+
+                <div class="controls">
+                    <input type="text" class="search-box" placeholder="Search leads..." id="search-input">
+                    <select class="filter-select" id="industry-filter">
+                        <option value="">All Industries</option>
+                        <option value="restaurant">Restaurant</option>
+                        <option value="retail">Retail</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="home-services">Home Services</option>
+                        <option value="automotive">Automotive</option>
+                        <option value="professional-services">Professional Services</option>
+                    </select>
+                    <select class="filter-select" id="date-filter">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+
+                <div class="leads-container">
+                    <table class="leads-table">
+                        <thead>
+                            <tr>
+                                <th>Business</th>
+                                <th>Contact</th>
+                                <th>Industry</th>
+                                <th>Health Score</th>
+                                <th>Revenue Potential</th>
+                                <th>Engagement</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-tbody">
+                            <tr>
+                                <td colspan="8" class="loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading leads...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics-section" class="content-section" style="display: none;">
+                <h2>Analytics Coming Soon</h2>
+                <p>Comprehensive analytics dashboard will be available here.</p>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings-section" class="content-section" style="display: none;">
+                <h2>System Settings</h2>
+                <p>Settings management will be available here.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Lead Detail Modal -->
+    <div id="lead-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-business-name">Lead Details</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading lead details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentStatus = 'pending';
+        let leads = [];
+        let dashboardData = {};
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOverview();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchSection(this.dataset.section);
+                });
+            });
+
+            // Status tabs
+            document.querySelectorAll('.status-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchStatus(this.dataset.status);
+                });
+            });
+
+            // Search and filters
+            document.getElementById('search-input').addEventListener('input', debounce(filterLeads, 300));
+            document.getElementById('industry-filter').addEventListener('change', filterLeads);
+            document.getElementById('date-filter').addEventListener('change', filterLeads);
+        }
+
+        function switchSection(section) {
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show selected section
+            document.getElementById(`${section}-section`).style.display = 'block';
+
+            // Update title
+            const titles = {
+                overview: 'Dashboard Overview',
+                leads: 'Leads Management',
+                analytics: 'Analytics & Reports',
+                settings: 'System Settings'
+            };
+            document.getElementById('section-title').textContent = titles[section];
+
+            // Load section data
+            if (section === 'leads' && leads.length === 0) {
+                loadLeads(currentStatus);
+            }
+        }
+
+        function switchStatus(status) {
+            currentStatus = status;
+            
+            // Update tabs
+            document.querySelectorAll('.status-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-status="${status}"]`).classList.add('active');
+
+            // Load leads for this status
+            loadLeads(status);
+        }
+
+        async function loadOverview() {
+            try {
+                const response = await fetch('/api/dashboard/overview');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    dashboardData = data;
+                    updateOverviewStats(data);
+                    updateRecentActivity(data.recent_activity || []);
+                } else {
+                    console.error('Failed to load overview:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading overview:', error);
+            }
+        }
+
+        function updateOverviewStats(data) {
+            const counts = data.lead_counts || {};
+            const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+            
+            document.getElementById('total-leads').textContent = total.toLocaleString();
+            document.getElementById('pending-leads').textContent = (counts.pending || 0).toLocaleString();
+            document.getElementById('active-prospects').textContent = (counts.active || 0).toLocaleString();
+            document.getElementById('converted-clients').textContent = (counts.converted || 0).toLocaleString();
+            
+            const conversionRate = data.conversion_rates?.consultation_to_client || 0;
+            document.getElementById('conversion-rate').textContent = `${conversionRate}%`;
+            
+            const monthlyRevenue = data.revenue_tracking?.monthly_totals || 0;
+            document.getElementById('monthly-revenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
+        }
+
+        function updateRecentActivity(activities) {
+            const container = document.getElementById('recent-activity');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<p style="padding: 2rem; text-align: center; color: #718096;">No recent activity</p>';
+                return;
+            }
+
+            const html = activities.map(activity => `
+                <div style="padding: 1rem; border-bottom: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${activity.business_name}</strong> - ${activity.description}
+                        </div>
+                        <span style="color: #718096; font-size: 0.8rem;">${activity.timestamp}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        async function loadLeads(status) {
+            try {
+                document.getElementById('leads-tbody').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading ${status} leads...</p>
+                        </td>
+                    </tr>
+                `;
+
+                const response = await fetch(`/api/dashboard/leads/${status}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    leads = data.leads || [];
+                    renderLeads(leads);
+                } else {
+                    console.error('Failed to load leads:', data.error);
+                    document.getElementById('leads-tbody').innerHTML = `
+                        <tr><td colspan="8" style="text-align: center; padding: 2rem; color: #e53e3e;">
+                            Error loading leads: ${data.error}
+                        </td></tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading leads:', error);
+                document.getElementById('leads-tbody').innerHTML = `
+                    <tr><td colspan="8" style="text-align: center; padding: 2rem; color: #e53e3e;">
+                        Network error loading leads
+                    </td></tr>
+                `;
+            }
+        }
+
+        function renderLeads(leadsToRender) {
+            const tbody = document.getElementById('leads-tbody');
+            
+            if (leadsToRender.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" style="text-align: center; padding: 2rem; color: #718096;">
+                        No leads found for this status
+                    </td></tr>
+                `;
+                return;
+            }
+
+            const html = leadsToRender.map(lead => `
+                <tr>
+                    <td>
+                        <div class="lead-name">${lead.business_name}</div>
+                        <div class="lead-business">${lead.website_url}</div>
+                    </td>
+                    <td>
+                        <div>${lead.contact_name}</div>
+                        <div style="font-size: 0.8rem; color: #718096;">${lead.email}</div>
+                    </td>
+                    <td>${formatBusinessType(lead.business_type)}</td>
+                    <td>
+                        ${lead.health_score ? `<span class="health-score ${getHealthScoreClass(lead.health_score)}">${lead.health_score}/100</span>` : '-'}
+                    </td>
+                    <td>${lead.revenue_potential || '-'}</td>
+                    <td>
+                        <div class="engagement-indicator">
+                            <span class="engagement-dot ${lead.report_downloaded ? 'active' : 'inactive'}" title="Report Downloaded"></span>
+                            <span class="engagement-dot ${lead.emails_opened > 0 ? 'active' : 'inactive'}" title="Emails Opened"></span>
+                            <span class="engagement-dot ${lead.links_clicked > 0 ? 'active' : 'inactive'}" title="Links Clicked"></span>
+                        </div>
+                    </td>
+                    <td>${lead.created_at}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-primary" onclick="viewLead('${lead.uuid}')">View</button>
+                            <button class="btn-sm btn-secondary" onclick="downloadReport('${lead.uuid}')">Report</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.innerHTML = html;
+        }
+
+        async function viewLead(leadId) {
+            try {
+                document.getElementById('lead-modal').classList.add('active');
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading lead details...</p>
+                    </div>
+                `;
+
+                const response = await fetch(`/api/dashboard/lead/${leadId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    renderLeadDetails(data);
+                } else {
+                    document.getElementById('modal-content').innerHTML = `
+                        <p style="color: #e53e3e;">Error loading lead details: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading lead details:', error);
+                document.getElementById('modal-content').innerHTML = `
+                    <p style="color: #e53e3e;">Network error loading lead details</p>
+                `;
+            }
+        }
+
+        function renderLeadDetails(data) {
+            const lead = data.lead;
+            const audit = data.audit_results;
+            
+            document.getElementById('modal-business-name').textContent = lead.business_name;
+            
+            const html = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div>
+                        <h4>Contact Information</h4>
+                        <p><strong>Name:</strong> ${lead.first_name} ${lead.last_name}</p>
+                        <p><strong>Email:</strong> ${lead.email}</p>
+                        <p><strong>Phone:</strong> ${lead.phone || 'Not provided'}</p>
+                        <p><strong>Website:</strong> <a href="${lead.website_url}" target="_blank">${lead.website_url}</a></p>
+                    </div>
+                    <div>
+                        <h4>Business Details</h4>
+                        <p><strong>Type:</strong> ${formatBusinessType(lead.business_type)}</p>
+                        <p><strong>Location:</strong> ${lead.location}</p>
+                        <p><strong>Status:</strong> <span class="status-badge status-${lead.status}">${lead.status}</span></p>
+                        <p><strong>Created:</strong> ${lead.formatted_created_at}</p>
+                    </div>
+                </div>
+                
+                ${audit ? `
+                    <div style="margin-bottom: 2rem;">
+                        <h4>Audit Results</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: ${getHealthScoreColor(lead.health_score)}">
+                                    ${lead.health_score || 0}/100
+                                </div>
+                                <div style="font-size: 0.8rem; color: #718096;">Health Score</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #2d3748;">
+                                    ${audit.mobile_speed_score || 0}/100
+                                </div>
+                                <div style="font-size: 0.8rem; color: #718096;">Mobile Speed</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: ${audit.mobile_friendly ? '#38a169' : '#e53e3e'};">
+                                    ${audit.mobile_friendly ? 'YES' : 'NO'}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #718096;">Mobile Friendly</div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div style="margin-bottom: 2rem;">
+                    <h4>Engagement Metrics</h4>
+                    <p><strong>Report Downloaded:</strong> ${lead.report_downloaded ? 'Yes' : 'No'}</p>
+                    <p><strong>Emails Opened:</strong> ${lead.emails_opened}</p>
+                    <p><strong>Links Clicked:</strong> ${lead.links_clicked}</p>
+                    <p><strong>Last Engagement:</strong> ${lead.last_engagement_date || 'Never'}</p>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="updateLeadStatus('${lead.uuid}')">Update Status</button>
+                    <button class="btn btn-secondary" onclick="downloadReport('${lead.uuid}')">Download Report</button>
+                    <button class="btn btn-cancel" onclick="closeModal()">Close</button>
+                </div>
+            `;
+
+            document.getElementById('modal-content').innerHTML = html;
+        }
+
+        function closeModal() {
+            document.getElementById('lead-modal').classList.remove('active');
+        }
+
+        function downloadReport(leadId) {
+            window.open(`/api/admin/lead/${leadId}/report`, '_blank');
+        }
+
+        function filterLeads() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const industry = document.getElementById('industry-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+            
+            let filtered = leads.filter(lead => {
+                const matchesSearch = !search || 
+                    lead.business_name.toLowerCase().includes(search) ||
+                    lead.contact_name.toLowerCase().includes(search) ||
+                    lead.email.toLowerCase().includes(search);
+                
+                const matchesIndustry = !industry || lead.business_type === industry;
+                
+                return matchesSearch && matchesIndustry;
+            });
+            
+            renderLeads(filtered);
+        }
+
+        function refreshData() {
+            loadOverview();
+            if (document.getElementById('leads-section').style.display !== 'none') {
+                loadLeads(currentStatus);
+            }
+        }
+
+        function formatBusinessType(type) {
+            const types = {
+                'restaurant': 'Restaurant',
+                'retail': 'Retail Store',
+                'healthcare': 'Healthcare',
+                'home-services': 'Home Services',
+                'automotive': 'Automotive',
+                'professional-services': 'Professional Services',
+                'beauty-wellness': 'Beauty/Wellness',
+                'fitness': 'Fitness',
+                'real-estate': 'Real Estate',
+                'education': 'Education',
+                'nonprofit': 'Non-Profit'
+            };
+            return types[type] || type;
+        }
+
+        function getHealthScoreClass(score) {
+            if (score >= 80) return 'excellent';
+            if (score >= 60) return 'good';
+            return 'poor';
+        }
+
+        function getHealthScoreColor(score) {
+            if (score >= 80) return '#38a169';
+            if (score >= 60) return '#d69e2e';
+            return '#e53e3e';
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>

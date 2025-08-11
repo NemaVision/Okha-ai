@@ -1,0 +1,820 @@
+const PDFDocument = require('pdfkit');
+const fs = require('fs-extra');
+const path = require('path');
+const moment = require('moment');
+
+class ReportGenerator {
+    constructor(database) {
+        this.db = database;
+        this.reportDir = path.join(__dirname, '..', 'reports');
+    }
+
+    async generateReport(leadId, leadData, auditResults) {
+        console.log(`Generating professional report for ${leadData.businessName}`);
+        
+        try {
+            // Create PDF document
+            const doc = new PDFDocument({
+                size: 'A4',
+                margin: 50,
+                info: {
+                    Title: `Website Audit Report - ${leadData.businessName}`,
+                    Author: 'Okha.ai',
+                    Subject: 'SEO and Website Performance Analysis',
+                    Keywords: 'SEO, Website Audit, Performance, Mobile, Local SEO'
+                }
+            });
+
+            // Calculate report path based on lead status
+            const sanitizedBusinessName = leadData.businessName.replace(/[^a-zA-Z0-9]/g, '-');
+            const dateStr = moment().format('YYYY-MM-DD');
+            const fileName = `${sanitizedBusinessName}-${dateStr}.pdf`;
+            const reportPath = path.join(this.reportDir, 'pending-leads', fileName);
+            
+            // Ensure directory exists
+            await fs.ensureDir(path.dirname(reportPath));
+            
+            // Create write stream
+            const stream = fs.createWriteStream(reportPath);
+            doc.pipe(stream);
+
+            // Generate report content
+            await this.generateCoverPage(doc, leadData, auditResults);
+            await this.generateExecutiveSummary(doc, leadData, auditResults);
+            await this.generateDetailedFindings(doc, auditResults);
+            await this.generateRecommendations(doc, auditResults, leadData.businessType);
+            await this.generateImplementationRoadmap(doc, auditResults);
+            await this.generateNextSteps(doc, leadData);
+
+            // Finalize PDF
+            doc.end();
+
+            // Wait for file to be written
+            await new Promise((resolve, reject) => {
+                stream.on('finish', resolve);
+                stream.on('error', reject);
+            });
+
+            console.log(`✓ Report generated: ${reportPath}`);
+            return reportPath;
+
+        } catch (error) {
+            console.error('Report generation failed:', error);
+            throw error;
+        }
+    }
+
+    async generateCoverPage(doc, leadData, auditResults) {
+        // Okha.ai Header
+        doc.fontSize(24)
+           .fillColor('#667eea')
+           .text('Okha.ai', 50, 50);
+        
+        doc.fontSize(12)
+           .fillColor('#666666')
+           .text('Professional Website Audit & SEO Analysis', 50, 80);
+
+        // Title
+        doc.fontSize(28)
+           .fillColor('#2d3748')
+           .text('Website Audit Report', 50, 140);
+        
+        // Business Information
+        doc.fontSize(18)
+           .fillColor('#4a5568')
+           .text(leadData.businessName, 50, 190);
+        
+        doc.fontSize(14)
+           .fillColor('#666666')
+           .text(leadData.website, 50, 220)
+           .text(`Audit Date: ${moment().format('MMMM Do, YYYY')}`, 50, 240)
+           .text(`Business Type: ${this.formatBusinessType(leadData.businessType)}`, 50, 260);
+
+        // Health Score Box
+        const healthScore = this.calculateOverallScore(auditResults);
+        const scoreColor = this.getScoreColor(healthScore);
+        
+        doc.rect(50, 320, 500, 80)
+           .stroke('#e2e8f0');
+        
+        doc.fontSize(16)
+           .fillColor('#2d3748')
+           .text('Overall Website Health Score', 70, 340);
+        
+        doc.fontSize(36)
+           .fillColor(scoreColor)
+           .text(`${healthScore}/100`, 70, 360);
+        
+        doc.fontSize(12)
+           .fillColor('#666666')
+           .text(this.getScoreDescription(healthScore), 200, 375);
+
+        // Key Findings Preview
+        const criticalIssues = auditResults.issues?.critical?.length || 0;
+        const highIssues = auditResults.issues?.high?.length || 0;
+        
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Key Findings:', 50, 440);
+        
+        doc.fontSize(12)
+           .fillColor('#e53e3e')
+           .text(`• ${criticalIssues} Critical Issues Found`, 70, 465);
+        
+        doc.fillColor('#dd6b20')
+           .text(`• ${highIssues} High Priority Issues`, 70, 485);
+        
+        // Revenue Impact Preview
+        const revenueProjection = this.calculateRevenueProjection(auditResults, leadData.businessType);
+        doc.fillColor('#38a169')
+           .text(`• Potential Additional Revenue: $${revenueProjection.min.toLocaleString()}-$${revenueProjection.max.toLocaleString()}/month`, 70, 505);
+
+        // Footer
+        doc.fontSize(10)
+           .fillColor('#a0aec0')
+           .text('This report was generated by Okha.ai\'s automated website analysis system', 50, 750)
+           .text('For questions about this report, contact us at audit@okha.ai', 50, 765);
+
+        doc.addPage();
+    }
+
+    async generateExecutiveSummary(doc, leadData, auditResults) {
+        doc.fontSize(20)
+           .fillColor('#2d3748')
+           .text('Executive Summary', 50, 50);
+
+        const healthScore = this.calculateOverallScore(auditResults);
+        const criticalIssues = auditResults.issues?.critical?.length || 0;
+        const revenueProjection = this.calculateRevenueProjection(auditResults, leadData.businessType);
+
+        // Business Overview
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Business Overview', 50, 100);
+
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text(`We analyzed ${leadData.businessName}'s website (${leadData.website}) to identify opportunities for improvement in search engine visibility, user experience, and customer conversion.`, 50, 125, { width: 500, align: 'left' });
+
+        // Key Findings Box
+        doc.rect(50, 170, 500, 120)
+           .fillAndStroke('#f7fafc', '#e2e8f0');
+
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Key Findings', 70, 190);
+
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text(`Overall Health Score: ${healthScore}/100 (${this.getScoreDescription(healthScore)})`, 70, 215)
+           .text(`Critical Issues: ${criticalIssues} issues requiring immediate attention`, 70, 235)
+           .text(`Mobile Performance: ${auditResults.performance?.mobile?.loadTime?.toFixed(1) || 'N/A'} seconds loading time`, 70, 255)
+           .text(`SEO Score: ${auditResults.seo?.score || 0}/100`, 70, 275);
+
+        // Revenue Impact
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Revenue Impact Analysis', 50, 320);
+
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text(`Based on our analysis of ${this.formatBusinessType(leadData.businessType)} businesses similar to yours, fixing the identified issues could potentially result in:`, 50, 345, { width: 500 });
+
+        // Revenue projection box
+        doc.rect(50, 380, 500, 60)
+           .fillAndStroke('#f0fff4', '#9ae6b4');
+
+        doc.fontSize(16)
+           .fillColor('#38a169')
+           .text(`$${revenueProjection.min.toLocaleString()} - $${revenueProjection.max.toLocaleString()} additional monthly revenue`, 70, 400);
+
+        doc.fontSize(10)
+           .fillColor('#68d391')
+           .text('*Based on improved search rankings, mobile usability, and conversion optimization', 70, 420);
+
+        // Priority Actions
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Immediate Priority Actions', 50, 480);
+
+        const priorityActions = this.getPriorityActions(auditResults);
+        let yPos = 505;
+        
+        priorityActions.slice(0, 3).forEach((action, index) => {
+            doc.fontSize(11)
+               .fillColor('#e53e3e')
+               .text(`${index + 1}. ${action}`, 70, yPos);
+            yPos += 20;
+        });
+
+        // Summary conclusion
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text(`The good news is that every issue we found can be fixed. With the right improvements, ${leadData.businessName} could see significant increases in website traffic, customer inquiries, and revenue within 30-90 days.`, 50, 590, { width: 500 });
+
+        doc.addPage();
+    }
+
+    async generateDetailedFindings(doc, auditResults) {
+        doc.fontSize(20)
+           .fillColor('#2d3748')
+           .text('Detailed Analysis & Findings', 50, 50);
+
+        let yPos = 100;
+
+        // Performance Analysis
+        yPos = await this.addSection(doc, 'Website Performance', yPos, () => {
+            const mobile = auditResults.performance?.mobile;
+            const desktop = auditResults.performance?.desktop;
+            
+            doc.fontSize(11)
+               .fillColor('#4a5568')
+               .text(`Mobile Loading Time: ${mobile?.loadTime?.toFixed(1) || 'N/A'} seconds (Score: ${mobile?.score || 0}/100)`, 70, yPos);
+            yPos += 20;
+            
+            doc.text(`Desktop Loading Time: ${desktop?.loadTime?.toFixed(1) || 'N/A'} seconds (Score: ${desktop?.score || 0}/100)`, 70, yPos);
+            yPos += 20;
+            
+            if (mobile?.loadTime > 3) {
+                doc.fillColor('#e53e3e')
+                   .text('⚠ Critical: Your mobile site loads too slowly. 53% of users abandon sites that take longer than 3 seconds to load.', 70, yPos, { width: 450 });
+                yPos += 30;
+            }
+            
+            return yPos + 20;
+        });
+
+        // Mobile Usability
+        yPos = await this.addSection(doc, 'Mobile Usability', yPos, () => {
+            const mobile = auditResults.mobile;
+            
+            doc.fontSize(11)
+               .fillColor('#4a5568')
+               .text(`Mobile-Friendly Score: ${mobile?.score || 0}/100`, 70, yPos);
+            yPos += 20;
+            
+            if (mobile?.issues) {
+                if (mobile.issues.textTooSmall) {
+                    doc.fillColor('#dd6b20')
+                       .text('• Text is too small to read on mobile devices', 90, yPos);
+                    yPos += 15;
+                }
+                
+                if (mobile.issues.clickTargetsTooClose) {
+                    doc.text('• Clickable elements are too close together', 90, yPos);
+                    yPos += 15;
+                }
+                
+                if (mobile.issues.viewportNotSet) {
+                    doc.text('• Viewport not properly configured for mobile', 90, yPos);
+                    yPos += 15;
+                }
+            }
+            
+            return yPos + 20;
+        });
+
+        // SEO Analysis
+        yPos = await this.addSection(doc, 'Search Engine Optimization (SEO)', yPos, () => {
+            const seo = auditResults.seo;
+            
+            doc.fontSize(11)
+               .fillColor('#4a5568')
+               .text(`SEO Score: ${seo?.score || 0}/100`, 70, yPos);
+            yPos += 20;
+            
+            if (seo?.issues) {
+                if (seo.issues.missingTitle) {
+                    doc.fillColor('#e53e3e')
+                       .text('• Critical: Missing or empty page titles', 90, yPos);
+                    yPos += 15;
+                }
+                
+                if (seo.issues.missingMetaDescription) {
+                    doc.fillColor('#dd6b20')
+                       .text('• Missing meta descriptions', 90, yPos);
+                    yPos += 15;
+                }
+                
+                if (seo.issues.noH1) {
+                    doc.text('• Missing H1 heading tags', 90, yPos);
+                    yPos += 15;
+                }
+                
+                if (seo.issues.missingAltTags > 0) {
+                    doc.text(`• ${seo.issues.missingAltTags} images missing alt tags`, 90, yPos);
+                    yPos += 15;
+                }
+            }
+            
+            return yPos + 20;
+        });
+
+        // Local SEO (if applicable)
+        const localBusinessTypes = ['restaurant', 'home-services', 'healthcare', 'automotive', 'retail'];
+        if (localBusinessTypes.some(type => auditResults.businessType?.includes(type))) {
+            yPos = await this.addSection(doc, 'Local SEO', yPos, () => {
+                const local = auditResults.local;
+                
+                doc.fontSize(11)
+                   .fillColor('#4a5568')
+                   .text(`Local SEO Score: ${local?.score || 0}/100`, 70, yPos);
+                yPos += 20;
+                
+                const contactInfo = local?.data?.contactInfo;
+                if (contactInfo) {
+                    if (!contactInfo.phone) {
+                        doc.fillColor('#e53e3e')
+                           .text('• Critical: Phone number not found on website', 90, yPos);
+                        yPos += 15;
+                    }
+                    
+                    if (!contactInfo.address) {
+                        doc.fillColor('#dd6b20')
+                           .text('• Business address not clearly displayed', 90, yPos);
+                        yPos += 15;
+                    }
+                }
+                
+                return yPos + 20;
+            });
+        }
+
+        // Conversion Optimization
+        yPos = await this.addSection(doc, 'Conversion Optimization', yPos, () => {
+            const conversion = auditResults.conversion;
+            
+            doc.fontSize(11)
+               .fillColor('#4a5568')
+               .text(`Conversion Score: ${conversion?.score || 0}/100`, 70, yPos);
+            yPos += 20;
+            
+            if (!conversion?.phoneVisible) {
+                doc.fillColor('#e53e3e')
+                   .text('• Critical: Phone number not easily visible to visitors', 90, yPos);
+                yPos += 15;
+            }
+            
+            if (!conversion?.contactFormPresent) {
+                doc.fillColor('#dd6b20')
+                   .text('• No contact form found on website', 90, yPos);
+                yPos += 15;
+            }
+            
+            if (conversion?.data?.ctaButtons < 2) {
+                doc.text('• Insufficient call-to-action buttons', 90, yPos);
+                yPos += 15;
+            }
+            
+            return yPos + 20;
+        });
+
+        doc.addPage();
+    }
+
+    async generateRecommendations(doc, auditResults, businessType) {
+        doc.fontSize(20)
+           .fillColor('#2d3748')
+           .text('Detailed Recommendations', 50, 50);
+
+        let yPos = 100;
+
+        // Critical Issues First
+        if (auditResults.issues?.critical?.length > 0) {
+            yPos = await this.addSection(doc, 'Critical Issues (Fix Immediately)', yPos, () => {
+                auditResults.issues.critical.forEach((issue, index) => {
+                    // Issue title
+                    doc.fontSize(12)
+                       .fillColor('#e53e3e')
+                       .text(`${index + 1}. ${issue.title}`, 70, yPos);
+                    yPos += 18;
+                    
+                    // Issue description
+                    doc.fontSize(10)
+                       .fillColor('#4a5568')
+                       .text(issue.description, 90, yPos, { width: 450 });
+                    yPos += 25;
+                    
+                    // Solution
+                    doc.fontSize(10)
+                       .fillColor('#38a169')
+                       .text(`Solution: ${issue.solution}`, 90, yPos, { width: 450 });
+                    yPos += 30;
+                });
+                
+                return yPos;
+            });
+        }
+
+        // High Priority Issues
+        if (auditResults.issues?.high?.length > 0) {
+            yPos = await this.addSection(doc, 'High Priority Issues (Fix Within 2 Weeks)', yPos, () => {
+                auditResults.issues.high.forEach((issue, index) => {
+                    if (yPos > 700) {
+                        doc.addPage();
+                        yPos = 50;
+                    }
+                    
+                    // Issue title
+                    doc.fontSize(12)
+                       .fillColor('#dd6b20')
+                       .text(`${index + 1}. ${issue.title}`, 70, yPos);
+                    yPos += 18;
+                    
+                    // Issue description
+                    doc.fontSize(10)
+                       .fillColor('#4a5568')
+                       .text(issue.description, 90, yPos, { width: 450 });
+                    yPos += 25;
+                    
+                    // Solution
+                    doc.fontSize(10)
+                       .fillColor('#38a169')
+                       .text(`Solution: ${issue.solution}`, 90, yPos, { width: 450 });
+                    yPos += 30;
+                });
+                
+                return yPos;
+            });
+        }
+
+        // Business-Specific Recommendations
+        const businessSpecific = this.getBusinessSpecificRecommendations(businessType, auditResults);
+        if (businessSpecific.length > 0) {
+            if (yPos > 600) {
+                doc.addPage();
+                yPos = 50;
+            }
+            
+            yPos = await this.addSection(doc, `Recommendations for ${this.formatBusinessType(businessType)} Businesses`, yPos, () => {
+                businessSpecific.forEach((rec, index) => {
+                    doc.fontSize(11)
+                       .fillColor('#4a5568')
+                       .text(`${index + 1}. ${rec}`, 70, yPos, { width: 470 });
+                    yPos += 25;
+                });
+                
+                return yPos;
+            });
+        }
+
+        doc.addPage();
+    }
+
+    async generateImplementationRoadmap(doc, auditResults) {
+        doc.fontSize(20)
+           .fillColor('#2d3748')
+           .text('Implementation Roadmap', 50, 50);
+
+        // Timeline introduction
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text('Here\'s a suggested timeline for implementing the recommended improvements:', 50, 90, { width: 500 });
+
+        let yPos = 130;
+
+        // Phase 1: Critical Issues (Week 1-2)
+        yPos = await this.addPhase(doc, 'Phase 1: Critical Fixes', 'Weeks 1-2', '#e53e3e', yPos, [
+            'Fix mobile loading speed issues',
+            'Make phone number clearly visible',
+            'Ensure mobile usability',
+            'Add missing page titles and meta descriptions'
+        ]);
+
+        // Phase 2: High Priority (Week 3-4)  
+        yPos = await this.addPhase(doc, 'Phase 2: High Priority Improvements', 'Weeks 3-4', '#dd6b20', yPos, [
+            'Optimize local SEO elements',
+            'Add contact forms and CTAs',
+            'Improve site navigation',
+            'Add customer testimonials'
+        ]);
+
+        // Phase 3: Ongoing Optimization (Month 2+)
+        yPos = await this.addPhase(doc, 'Phase 3: Ongoing Optimization', 'Month 2+', '#38a169', yPos, [
+            'Monitor search rankings',
+            'Track conversion improvements',
+            'Add fresh content regularly',
+            'Collect and display more reviews'
+        ]);
+
+        // Expected Results Timeline
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Expected Results Timeline', 50, yPos + 20);
+
+        yPos += 60;
+
+        const timeline = [
+            { period: '2-4 weeks', result: 'Improved mobile experience and site speed' },
+            { period: '1-2 months', result: '20-40% increase in search visibility' },
+            { period: '2-3 months', result: '25-60% increase in customer inquiries' },
+            { period: '3-6 months', result: 'Full revenue potential realized' }
+        ];
+
+        timeline.forEach(item => {
+            doc.fontSize(11)
+               .fillColor('#667eea')
+               .text(item.period, 70, yPos);
+            
+            doc.fillColor('#4a5568')
+               .text(item.result, 170, yPos);
+            
+            yPos += 25;
+        });
+
+        doc.addPage();
+    }
+
+    async generateNextSteps(doc, leadData) {
+        doc.fontSize(20)
+           .fillColor('#2d3748')
+           .text('Next Steps', 50, 50);
+
+        // Implementation options
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Implementation Options', 50, 100);
+
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text('You have several options for implementing these recommendations:', 50, 125);
+
+        // Option 1: DIY
+        doc.rect(50, 160, 500, 80)
+           .fillAndStroke('#f7fafc', '#e2e8f0');
+
+        doc.fontSize(12)
+           .fillColor('#2d3748')
+           .text('Option 1: Do It Yourself', 70, 180);
+
+        doc.fontSize(10)
+           .fillColor('#4a5568')
+           .text('Use this report as a guide to make improvements yourself or with your current web developer. Estimated timeline: 3-6 months.', 70, 200, { width: 450 });
+
+        // Option 2: Okha.ai Done-For-You Service
+        doc.rect(50, 260, 500, 120)
+           .fillAndStroke('#f0fff4', '#9ae6b4');
+
+        doc.fontSize(12)
+           .fillColor('#38a169')
+           .text('Option 2: Okha.ai Done-For-You Service', 70, 280);
+
+        doc.fontSize(10)
+           .fillColor('#2d5016')
+           .text('Let our team implement all recommendations for you. We handle everything from technical fixes to content optimization.', 70, 300, { width: 450 });
+
+        doc.fontSize(11)
+           .fillColor('#38a169')
+           .text('✓ Complete implementation in 2-3 weeks', 90, 325)
+           .text('✓ 90-day results guarantee', 90, 340)
+           .text('✓ Ongoing monitoring and support', 90, 355);
+
+        // Pricing
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Okha.ai Done-For-You Service: $2,497', 70, 400);
+
+        doc.fontSize(10)
+           .fillColor('#4a5568')
+           .text('One-time fee includes all technical improvements, content optimization, and 3 months of monitoring.', 70, 425, { width: 450 });
+
+        // Contact Information
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text('Ready to Get Started?', 50, 480);
+
+        doc.fontSize(11)
+           .fillColor('#4a5568')
+           .text(`${leadData.firstName}, if you'd like to discuss how we can help ${leadData.businessName} get more customers online, simply reply to the email that delivered this report.`, 50, 505, { width: 500 });
+
+        doc.fontSize(10)
+           .fillColor('#4a5568')
+           .text('We typically see results within 30-60 days of implementation. Every day you wait is potential revenue lost to competitors with better websites.', 50, 545, { width: 500 });
+
+        // Footer
+        doc.fontSize(10)
+           .fillColor('#a0aec0')
+           .text('Okha.ai - Helping Small Businesses Compete Online', 50, 700)
+           .text('Email: audit@okha.ai | Website: okha.ai', 50, 715)
+           .text(`Report generated on ${moment().format('MMMM Do, YYYY')} for ${leadData.businessName}`, 50, 730);
+    }
+
+    async addSection(doc, title, yPos, contentCallback) {
+        if (yPos > 700) {
+            doc.addPage();
+            yPos = 50;
+        }
+
+        doc.fontSize(14)
+           .fillColor('#2d3748')
+           .text(title, 50, yPos);
+
+        yPos += 30;
+        
+        return contentCallback(yPos);
+    }
+
+    async addPhase(doc, title, timeline, color, yPos, items) {
+        if (yPos > 650) {
+            doc.addPage();
+            yPos = 50;
+        }
+
+        // Phase header
+        doc.rect(50, yPos, 500, 30)
+           .fillAndStroke(color + '20', color);
+
+        doc.fontSize(12)
+           .fillColor(color)
+           .text(title, 70, yPos + 8);
+
+        doc.fontSize(10)
+           .fillColor('#ffffff')
+           .text(timeline, 400, yPos + 10);
+
+        yPos += 50;
+
+        // Phase items
+        items.forEach(item => {
+            doc.fontSize(10)
+               .fillColor('#4a5568')
+               .text(`• ${item}`, 70, yPos);
+            yPos += 18;
+        });
+
+        return yPos + 20;
+    }
+
+    calculateOverallScore(auditResults) {
+        // Weighted average of all scores
+        const scores = [];
+        const weights = [];
+
+        if (auditResults.performance?.mobile?.score !== undefined) {
+            scores.push(auditResults.performance.mobile.score);
+            weights.push(0.3);
+        }
+
+        if (auditResults.mobile?.score !== undefined) {
+            scores.push(auditResults.mobile.score);
+            weights.push(0.2);
+        }
+
+        if (auditResults.seo?.score !== undefined) {
+            scores.push(auditResults.seo.score);
+            weights.push(0.2);
+        }
+
+        if (auditResults.local?.score !== undefined) {
+            scores.push(auditResults.local.score);
+            weights.push(0.15);
+        }
+
+        if (auditResults.conversion?.score !== undefined) {
+            scores.push(auditResults.conversion.score);
+            weights.push(0.1);
+        }
+
+        if (auditResults.technical?.score !== undefined) {
+            scores.push(auditResults.technical.score);
+            weights.push(0.05);
+        }
+
+        if (scores.length === 0) return 0;
+
+        const weightedSum = scores.reduce((sum, score, i) => sum + (score * weights[i]), 0);
+        const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+        return Math.round(weightedSum / totalWeight);
+    }
+
+    calculateRevenueProjection(auditResults, businessType) {
+        // Base projections by business type
+        const baseProjections = {
+            'restaurant': { min: 2000, max: 5000 },
+            'home-services': { min: 3000, max: 8000 },
+            'healthcare': { min: 5000, max: 15000 },
+            'automotive': { min: 2500, max: 6000 },
+            'retail': { min: 1500, max: 4000 },
+            'professional-services': { min: 3000, max: 10000 }
+        };
+
+        const base = baseProjections[businessType] || baseProjections['retail'];
+        
+        // Adjust based on issues found
+        let multiplier = 1.0;
+        
+        if (auditResults.performance?.mobile?.loadTime > 5) multiplier += 0.3;
+        if (auditResults.performance?.mobile?.loadTime > 8) multiplier += 0.5;
+        if (auditResults.mobile?.score < 50) multiplier += 0.4;
+        if (auditResults.seo?.score < 60) multiplier += 0.3;
+        if (!auditResults.conversion?.phoneVisible) multiplier += 0.4;
+        if (!auditResults.conversion?.contactFormPresent) multiplier += 0.2;
+
+        return {
+            min: Math.round(base.min * multiplier),
+            max: Math.round(base.max * multiplier)
+        };
+    }
+
+    getScoreColor(score) {
+        if (score >= 80) return '#38a169';
+        if (score >= 60) return '#d69e2e';
+        if (score >= 40) return '#dd6b20';
+        return '#e53e3e';
+    }
+
+    getScoreDescription(score) {
+        if (score >= 80) return 'Excellent';
+        if (score >= 60) return 'Good';
+        if (score >= 40) return 'Needs Improvement';
+        return 'Poor';
+    }
+
+    formatBusinessType(businessType) {
+        const types = {
+            'restaurant': 'Restaurant/Food Service',
+            'retail': 'Retail Store',
+            'professional-services': 'Professional Services',
+            'healthcare': 'Healthcare/Medical',
+            'home-services': 'Home Services',
+            'beauty-wellness': 'Beauty/Wellness',
+            'fitness': 'Fitness/Gym',
+            'real-estate': 'Real Estate',
+            'automotive': 'Automotive',
+            'education': 'Education/Training',
+            'nonprofit': 'Non-Profit'
+        };
+        
+        return types[businessType] || 'Business';
+    }
+
+    getPriorityActions(auditResults) {
+        const actions = [];
+
+        if (auditResults.performance?.mobile?.loadTime > 5) {
+            actions.push('Fix slow mobile loading speed');
+        }
+
+        if (!auditResults.conversion?.phoneVisible) {
+            actions.push('Make phone number prominently visible');
+        }
+
+        if (auditResults.mobile?.score < 50) {
+            actions.push('Fix mobile usability issues');
+        }
+
+        if (auditResults.seo?.issues?.missingTitle) {
+            actions.push('Add proper page titles');
+        }
+
+        if (auditResults.local?.score < 50) {
+            actions.push('Optimize local SEO setup');
+        }
+
+        return actions;
+    }
+
+    getBusinessSpecificRecommendations(businessType, auditResults) {
+        const recommendations = {
+            'restaurant': [
+                'Add online menu with prices clearly displayed',
+                'Include reservation system or online ordering',
+                'Display customer reviews and food photos prominently',
+                'Add location and hours prominently on every page',
+                'Include "Order Online" and "Make Reservation" buttons'
+            ],
+            'home-services': [
+                'Add service area map showing coverage zones',
+                'Include "Get Free Quote" buttons on every service page',
+                'Display licenses, certifications, and insurance info',
+                'Add before/after photos of completed projects',
+                'Include emergency contact number for urgent services'
+            ],
+            'healthcare': [
+                'Add online appointment scheduling system',
+                'Display office hours and location prominently',
+                'Include insurance acceptance information',
+                'Add patient portal login if available',
+                'Include "Book Appointment" buttons throughout site'
+            ],
+            'automotive': [
+                'Add service scheduling system',
+                'Display certifications and manufacturer approvals',
+                'Include service pricing or price ranges',
+                'Add customer testimonials and reviews',
+                'Include "Schedule Service" buttons on every page'
+            ]
+        };
+
+        return recommendations[businessType] || [
+            'Add clear call-to-action buttons',
+            'Include customer testimonials',
+            'Display contact information prominently',
+            'Add service or product descriptions',
+            'Include business hours and location'
+        ];
+    }
+}
+
+module.exports = ReportGenerator;
