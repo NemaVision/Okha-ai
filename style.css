@@ -1058,7 +1058,7 @@ footer a:hover {
         height: 100vh;
         background: var(--white);
         flex-direction: column;
-        padding: var(--space-2xl) var(--space-lg);
+        padding: var(--space-lg) var(--space-md);
         box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
         z-index: 1001;
         overflow-y: auto;
@@ -1071,7 +1071,7 @@ footer a:hover {
     }
     
     .nav-links li {
-        margin-bottom: var(--space-md);
+        margin-bottom: var(--space-xs);
         opacity: 0;
         transform: translateX(30px);
         transition: all 0.3s ease;
@@ -1091,16 +1091,16 @@ footer a:hover {
     .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
     
     .nav-links li:last-child {
-        margin-bottom: var(--space-lg);
+        margin-bottom: var(--space-sm);
     }
     
     .nav-links a {
-        padding: var(--space-md) var(--space-sm);
-        border-radius: var(--radius-lg);
+        padding: var(--space-sm) var(--space-sm);
+        border-radius: var(--radius-md);
         display: block;
         text-align: left;
         font-weight: 500;
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: var(--dark-700);
         transition: var(--transition-fast);
         border-left: 3px solid transparent;
@@ -1118,9 +1118,9 @@ footer a:hover {
         display: flex;
         justify-content: center;
         gap: var(--space-sm);
-        padding: var(--space-lg) var(--space-sm);
+        padding: var(--space-md) var(--space-sm);
         border-top: 1px solid var(--gray-200);
-        margin-top: var(--space-lg);
+        margin-top: var(--space-sm);
     }
     
     .mobile-language-switcher a {
