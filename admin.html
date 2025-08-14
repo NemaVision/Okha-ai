@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okha.ai Admin Dashboard</title>
+    <meta name="description" content="Admin dashboard for managing Okha.ai leads and audit requests">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        /* Admin-specific styles that extend existing design system */
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: var(--space-xl) 0;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: var(--space-md);
+        }
+
+        .admin-nav-item {
+            background: none;
+            border: none;
+            padding: var(--space-md) var(--space-lg);
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--dark-600);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition-normal);
+        }
+
+        .admin-nav-item:hover {
+            color: var(--primary-color);
+        }
+
+        .admin-nav-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .admin-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: var(--space-xl);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: var(--space-sm);
+        }
+
+        .stat-label {
+            color: var(--dark-600);
+            font-size: 1rem;
+        }
+
+        .leads-container {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .leads-header {
+            background: var(--gray-50);
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .admin-input {
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .admin-select {
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .leads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leads-table th,
+        .leads-table td {
+            padding: var(--space-md);
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .leads-table th {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--dark-700);
+            font-size: 0.9rem;
+        }
+
+        .leads-table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        .lead-business {
+            font-weight: 600;
+            color: var(--dark-800);
+        }
+
+        .lead-contact {
+            color: var(--dark-600);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-new { background: #fef3c7; color: #92400e; }
+        .status-contacted { background: #e0e7ff; color: #3730a3; }
+        .status-interested { background: #d1fae5; color: #065f46; }
+        .status-converted { background: #dcfce7; color: #166534; }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .btn-small {
+            padding: var(--space-xs) var(--space-sm);
+            font-size: 0.8rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+
+        .btn-view {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-contact {
+            background: var(--gray-200);
+            color: var(--dark-700);
+        }
+
+        .btn-contact:hover {
+            background: var(--gray-300);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: var(--space-2xl);
+            border-radius: var(--radius-2xl);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark-800);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-600);
+        }
+
+        .lead-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .detail-section h4 {
+            color: var(--primary-color);
+            margin-bottom: var(--space-md);
+            font-size: 1.1rem;
+        }
+
+        .detail-item {
+            margin-bottom: var(--space-sm);
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark-700);
+        }
+
+        .detail-value {
+            color: var(--dark-600);
+        }
+
+        .notes-section {
+            margin-top: var(--space-xl);
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .note-form {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .note-input {
+            flex: 1;
+            padding: var(--space-sm);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+        }
+
+        .settings-form {
+            background: var(--white);
+            padding: var(--space-xl);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .form-section h3 {
+            color: var(--primary-color);
+            margin-bottom: var(--space-md);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-2xl);
+            color: var(--dark-600);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: var(--space-sm);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .admin-nav {
+                flex-wrap: wrap;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-controls {
+                flex-direction: column;
+            }
+
+            .leads-table {
+                font-size: 0.8rem;
+            }
+
+            .lead-detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="admin-container">
+            <h1>Okha.ai Admin Dashboard</h1>
+            <p>Manage your SEO audit leads and track conversions</p>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <button class="admin-nav-item active" data-section="dashboard">📊 Dashboard</button>
+            <button class="admin-nav-item" data-section="leads">👥 Leads</button>
+            <button class="admin-nav-item" data-section="analytics">📈 Analytics</button>
+            <button class="admin-nav-item" data-section="settings">⚙️ Settings</button>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-leads">-</div>
+                    <div class="stat-label">Total Leads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="new-leads">-</div>
+                    <div class="stat-label">New This Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="conversion-rate">-%</div>
+                    <div class="stat-label">Conversion Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="revenue-projected">$-</div>
+                    <div class="stat-label">Projected Revenue</div>
+                </div>
+            </div>
+
+            <div class="leads-container">
+                <div class="leads-header">
+                    <h3>Recent Activity</h3>
+                    <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+                <div id="recent-activity" class="loading">
+                    <div class="spinner"></div>
+                    Loading recent activity...
+                </div>
+            </div>
+        </section>
+
+        <!-- Leads Section -->
+        <section id="leads" class="admin-section">
+            <div class="search-controls">
+                <input type="text" class="admin-input" placeholder="Search leads..." id="search-input">
+                <select class="admin-select" id="status-filter">
+                    <option value="">All Status</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="interested">Interested</option>
+                    <option value="converted">Converted</option>
+                </select>
+                <select class="admin-select" id="business-filter">
+                    <option value="">All Business Types</option>
+                    <option value="restaurant">Restaurant</option>
+                    <option value="retail">Retail</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="home-services">Home Services</option>
+                    <option value="automotive">Automotive</option>
+                </select>
+            </div>
+
+            <div class="leads-container">
+                <div class="leads-header">
+                    <h3>All Leads</h3>
+                    <button class="btn btn-primary" onclick="exportLeads()">📤 Export</button>
+                </div>
+                <table class="leads-table">
+                    <thead>
+                        <tr>
+                            <th>Business</th>
+                            <th>Contact</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-table-body">
+                        <tr>
+                            <td colspan="6" class="loading">
+                                <div class="spinner"></div>
+                                Loading leads...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="admin-section">
+            <div class="leads-container">
+                <div class="leads-header">
+                    <h3>📊 Analytics Dashboard</h3>
+                    <button class="btn btn-primary" onclick="loadAnalyticsData()">🔄 Refresh Analytics</button>
+                </div>
+                <div id="analytics-content" style="padding: var(--space-xl);">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading analytics data...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="admin-section">
+            <div class="settings-form">
+                <h3>Integration Settings</h3>
+                
+                <div class="form-section">
+                    <h4>Data Storage</h4>
+                    <div class="form-group">
+                        <label class="form-label">Storage Method:</label>
+                        <select class="form-input" id="storage-method">
+                            <option value="localStorage">Local Storage (Browser)</option>
+                            <option value="googleSheets">Google Sheets</option>
+                            <option value="netlify">Netlify Forms</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="google-sheets-config" style="display: none;">
+                        <label class="form-label">Google Sheets URL:</label>
+                        <input type="url" class="form-input" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/...">
+                        <small style="color: var(--dark-600);">Enter the URL of your Google Sheets document configured for web app deployment</small>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Email Notifications</h4>
+                    <div class="form-group">
+                        <label class="form-label">Notification Email:</label>
+                        <input type="email" class="form-input" id="notification-email" placeholder="admin@okha.ai">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Lead Scoring</h4>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="auto-scoring"> Enable automatic lead scoring
+                        </label>
+                        <small style="color: var(--dark-600);">Automatically score leads based on business type and form responses</small>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Lead Detail Modal -->
+    <div id="lead-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Lead Details</h3>
+                <button class="close-btn" onclick="closeLead()">&times;</button>
+            </div>
+            <div id="lead-details-content">
+                <!-- Lead details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the existing script.js -->
+    <script src="script.js"></script>
+    
+    <script>
+        // Vercel-integrated Admin Dashboard JavaScript
+        class OkhaAdmin {
+            constructor() {
+                this.leads = [];
+                this.dashboardData = null;
+                this.settings = this.loadSettings();
+                this.authHeaders = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.authenticateAndLoadData();
+            }
+
+            async authenticateAndLoadData() {
+                try {
+                    await this.authenticate();
+                    await this.loadDashboardData();
+                    await this.loadAnalyticsData();
+                } catch (error) {
+                    console.error('Authentication or data loading failed:', error);
+                    this.showError('Failed to load dashboard data. Please check your credentials.');
+                }
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.admin-nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        this.switchSection(e.target.dataset.section);
+                    });
+                });
+
+                // Search and filters
+                document.getElementById('search-input').addEventListener('input', () => this.filterLeads());
+                document.getElementById('status-filter').addEventListener('change', () => this.filterLeads());
+                document.getElementById('business-filter').addEventListener('change', () => this.filterLeads());
+
+                // Settings
+                document.getElementById('storage-method').addEventListener('change', (e) => {
+                    this.toggleStorageConfig(e.target.value);
+                });
+            }
+
+            switchSection(sectionName) {
+                // Update navigation
+                document.querySelectorAll('.admin-nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+                // Show/hide sections
+                document.querySelectorAll('.admin-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(sectionName).classList.add('active');
+            }
+
+            // Sample data for demonstration
+            generateSampleLeads() {
+                const sampleLeads = [
+                    {
+                        id: '1',
+                        businessName: 'Tony\'s Italian Restaurant',
+                        website: 'tonysitalian.com',
+                        firstName: 'Tony',
+                        lastName: 'Rossini',
+                        email: 'tony@tonysitalian.com',
+                        phone: '(555) 123-4567',
+                        businessType: 'restaurant',
+                        mainGoal: 'more-customers',
+                        status: 'new',
+                        date: new Date().toISOString(),
+                        notes: []
+                    },
+                    {
+                        id: '2',
+                        businessName: 'Smith Auto Repair',
+                        website: 'smithautorepair.com',
+                        firstName: 'John',
+                        lastName: 'Smith',
+                        email: 'john@smithauto.com',
+                        phone: '(555) 987-6543',
+                        businessType: 'automotive',
+                        mainGoal: 'generate-leads',
+                        status: 'contacted',
+                        date: new Date(Date.now() - 86400000).toISOString(),
+                        notes: ['Called customer, interested in full audit']
+                    },
+                    {
+                        id: '3',
+                        businessName: 'Downtown Dental',
+                        website: 'downtowndental.com',
+                        firstName: 'Dr. Sarah',
+                        lastName: 'Johnson',
+                        email: 'sarah@downtowndental.com',
+                        phone: '(555) 456-7890',
+                        businessType: 'healthcare',
+                        mainGoal: 'appointments',
+                        status: 'converted',
+                        date: new Date(Date.now() - 172800000).toISOString(),
+                        notes: ['Signed up for $2,497 package', 'Project starts next week']
+                    }
+                ];
+
+                return sampleLeads;
+            }
+
+            async authenticate() {
+                if (this.authHeaders) return;
+                
+                const password = prompt('Enter admin password:');
+                if (!password) throw new Error('Authentication cancelled');
+                
+                const credentials = btoa('admin:' + password);
+                this.authHeaders = {
+                    'Authorization': 'Basic ' + credentials,
+                    'Content-Type': 'application/json'
+                };
+            }
+
+            async loadDashboardData() {
+                try {
+                    const response = await fetch('/api/admin/dashboard', {
+                        headers: this.authHeaders
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error('Authentication failed. Please check your password.');
+                        }
+                        throw new Error(`Failed to load data: ${response.status}`);
+                    }
+
+                    this.dashboardData = await response.json();
+                    this.leads = this.dashboardData.leads || [];
+                    this.renderLeads();
+                    this.updateDashboard();
+                    
+                } catch (error) {
+                    console.error('Dashboard load error:', error);
+                    // Fallback to sample data if API fails
+                    this.loadFallbackData();
+                    throw error;
+                }
+            }
+
+            loadFallbackData() {
+                // Use sample data as fallback
+                this.leads = this.generateSampleLeads();
+                this.renderLeads();
+                this.updateDashboard();
+            }
+
+            saveLeads() {
+                localStorage.setItem('okha_leads', JSON.stringify(this.leads));
+            }
+
+            renderLeads(leadsToShow = null) {
+                const leads = leadsToShow || this.leads;
+                const tbody = document.getElementById('leads-table-body');
+
+                if (leads.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--space-xl); color: var(--dark-600);">No leads found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = leads.map(lead => `
+                    <tr>
+                        <td>
+                            <div class="lead-business">${lead.businessName}</div>
+                            <div class="lead-contact" style="font-size: 0.8rem;">${lead.website}</div>
+                        </td>
+                        <td>
+                            <div>${lead.firstName} ${lead.lastName}</div>
+                            <div class="lead-contact">${lead.email}</div>
+                        </td>
+                        <td>${this.formatBusinessType(lead.businessType)}</td>
+                        <td><span class="status-badge status-${lead.status}">${lead.status}</span></td>
+                        <td>${this.formatDate(lead.date)}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-small btn-view" onclick="admin.viewLead('${lead.id}')">View</button>
+                                <button class="btn-small btn-contact" onclick="admin.contactLead('${lead.id}')">Contact</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            filterLeads() {
+                const search = document.getElementById('search-input').value.toLowerCase();
+                const statusFilter = document.getElementById('status-filter').value;
+                const businessFilter = document.getElementById('business-filter').value;
+
+                let filtered = this.leads.filter(lead => {
+                    const matchesSearch = !search || 
+                        lead.businessName.toLowerCase().includes(search) ||
+                        lead.firstName.toLowerCase().includes(search) ||
+                        lead.lastName.toLowerCase().includes(search) ||
+                        lead.email.toLowerCase().includes(search);
+
+                    const matchesStatus = !statusFilter || lead.status === statusFilter;
+                    const matchesBusiness = !businessFilter || lead.businessType === businessFilter;
+
+                    return matchesSearch && matchesStatus && matchesBusiness;
+                });
+
+                this.renderLeads(filtered);
+            }
+
+            viewLead(leadId) {
+                const lead = this.leads.find(l => l.id === leadId);
+                if (!lead) return;
+
+                const modal = document.getElementById('lead-modal');
+                const content = document.getElementById('lead-details-content');
+
+                content.innerHTML = `
+                    <div class="lead-detail-grid">
+                        <div class="detail-section">
+                            <h4>Business Information</h4>
+                            <div class="detail-item">
+                                <span class="detail-label">Business Name:</span>
+                                <span class="detail-value">${lead.businessName}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Website:</span>
+                                <span class="detail-value"><a href="https://${lead.website}" target="_blank">${lead.website}</a></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Business Type:</span>
+                                <span class="detail-value">${this.formatBusinessType(lead.businessType)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Main Goal:</span>
+                                <span class="detail-value">${this.formatMainGoal(lead.mainGoal)}</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <h4>Contact Information</h4>
+                            <div class="detail-item">
+                                <span class="detail-label">Name:</span>
+                                <span class="detail-value">${lead.firstName} ${lead.lastName}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email:</span>
+                                <span class="detail-value"><a href="mailto:${lead.email}">${lead.email}</a></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Phone:</span>
+                                <span class="detail-value"><a href="tel:${lead.phone}">${lead.phone || 'Not provided'}</a></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Status:</span>
+                                <span class="detail-value">
+                                    <select onchange="admin.updateLeadStatus('${lead.id}', this.value)" style="padding: 4px;">
+                                        <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+                                        <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                                        <option value="interested" ${lead.status === 'interested' ? 'selected' : ''}>Interested</option>
+                                        <option value="converted" ${lead.status === 'converted' ? 'selected' : ''}>Converted</option>
+                                    </select>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-section">
+                        <h4>Notes</h4>
+                        <div id="notes-list">
+                            ${lead.notes.length > 0 ? 
+                                lead.notes.map(note => `<div style="padding: var(--space-sm); background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: var(--space-sm);">${note}</div>`).join('') 
+                                : '<p style="color: var(--dark-600);">No notes yet</p>'
+                            }
+                        </div>
+                        <div class="note-form">
+                            <input type="text" class="note-input" id="new-note" placeholder="Add a note...">
+                            <button class="btn btn-primary" onclick="admin.addNote('${lead.id}')">Add Note</button>
+                        </div>
+                    </div>
+                `;
+
+                modal.classList.add('active');
+            }
+
+            closeLead() {
+                document.getElementById('lead-modal').classList.remove('active');
+            }
+
+            updateLeadStatus(leadId, newStatus) {
+                const lead = this.leads.find(l => l.id === leadId);
+                if (lead) {
+                    lead.status = newStatus;
+                    lead.notes.push(`Status changed to ${newStatus} on ${new Date().toLocaleString()}`);
+                    this.saveLeads();
+                    this.renderLeads();
+                    this.updateDashboard();
+                }
+            }
+
+            addNote(leadId) {
+                const noteInput = document.getElementById('new-note');
+                const noteText = noteInput.value.trim();
+                
+                if (!noteText) return;
+
+                const lead = this.leads.find(l => l.id === leadId);
+                if (lead) {
+                    lead.notes.push(`${new Date().toLocaleString()}: ${noteText}`);
+                    this.saveLeads();
+                    noteInput.value = '';
+                    this.viewLead(leadId); // Refresh the modal
+                }
+            }
+
+            contactLead(leadId) {
+                const lead = this.leads.find(l => l.id === leadId);
+                if (!lead) return;
+
+                const subject = encodeURIComponent(`Re: Website Audit for ${lead.businessName}`);
+                const body = encodeURIComponent(`Hi ${lead.firstName},\n\nThank you for requesting a website audit for ${lead.businessName}.\n\nBest regards,\nOkha.ai Team`);
+                
+                window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`);
+                
+                // Update lead status
+                if (lead.status === 'new') {
+                    this.updateLeadStatus(leadId, 'contacted');
+                }
+            }
+
+            updateDashboard() {
+                if (this.dashboardData && this.dashboardData.stats) {
+                    // Use real data from Vercel Functions
+                    const stats = this.dashboardData.stats;
+                    document.getElementById('total-leads').textContent = stats.totalLeads;
+                    document.getElementById('new-leads').textContent = stats.last24hLeads;
+                    document.getElementById('conversion-rate').textContent = `${stats.conversionRate}%`;
+                    document.getElementById('revenue-projected').textContent = `$${stats.emailsSent * 2497}`;
+                } else {
+                    // Fallback calculation
+                    const totalLeads = this.leads.length;
+                    const newThisWeek = this.leads.filter(lead => {
+                        const leadDate = new Date(lead.timestamp || lead.date);
+                        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                        return leadDate > weekAgo;
+                    }).length;
+                    
+                    const completed = this.leads.filter(l => l.status === 'audit_completed' || l.status === 'converted').length;
+                    const conversionRate = totalLeads > 0 ? Math.round((completed / totalLeads) * 100) : 0;
+                    const projectedRevenue = completed * 2497;
+
+                    document.getElementById('total-leads').textContent = totalLeads;
+                    document.getElementById('new-leads').textContent = newThisWeek;
+                    document.getElementById('conversion-rate').textContent = `${conversionRate}%`;
+                    document.getElementById('revenue-projected').textContent = `$${projectedRevenue.toLocaleString()}`;
+                }
+
+                // Update recent activity
+                const recentActivity = document.getElementById('recent-activity');
+                const recentLeads = this.leads.slice(-5).reverse();
+                
+                recentActivity.innerHTML = recentLeads.length > 0 ? 
+                    recentLeads.map(lead => `
+                        <div style="padding: var(--space-md); border-bottom: 1px solid var(--gray-200);">
+                            <strong>${lead.businessName}</strong> - ${this.getStatusMessage(lead)}
+                            <span style="float: right; color: var(--dark-600); font-size: 0.9rem;">${this.formatDate(lead.timestamp || lead.date)}</span>
+                        </div>
+                    `).join('') :
+                    '<p style="padding: var(--space-xl); text-align: center; color: var(--dark-600);">No recent activity</p>';
+            }
+
+            getStatusMessage(lead) {
+                if (lead.emailSent) return `Audit report sent to ${lead.firstName} ${lead.lastName}`;
+                if (lead.status === 'audit_completed') return `Audit completed for ${lead.firstName} ${lead.lastName}`;
+                return `New audit request from ${lead.firstName} ${lead.lastName}`;
+            }
+
+            exportLeads() {
+                const csv = this.convertToCSV(this.leads);
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `okha-leads-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+
+            convertToCSV(leads) {
+                const headers = ['Business Name', 'Website', 'Contact Name', 'Email', 'Phone', 'Business Type', 'Main Goal', 'Status', 'Date'];
+                const rows = leads.map(lead => [
+                    lead.businessName,
+                    lead.website,
+                    `${lead.firstName} ${lead.lastName}`,
+                    lead.email,
+                    lead.phone || '',
+                    lead.businessType,
+                    lead.mainGoal,
+                    lead.status,
+                    this.formatDate(lead.date)
+                ]);
+
+                return [headers, ...rows].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
+            }
+
+            // Utility methods
+            formatBusinessType(type) {
+                const types = {
+                    'restaurant': 'Restaurant',
+                    'retail': 'Retail Store',
+                    'healthcare': 'Healthcare',
+                    'home-services': 'Home Services',
+                    'automotive': 'Automotive',
+                    'professional-services': 'Professional Services'
+                };
+                return types[type] || type;
+            }
+
+            formatMainGoal(goal) {
+                const goals = {
+                    'more-customers': 'Get More Customers',
+                    'increase-sales': 'Increase Sales',
+                    'generate-leads': 'Generate Leads',
+                    'phone-calls': 'Get Phone Calls',
+                    'appointments': 'Book Appointments'
+                };
+                return goals[goal] || goal;
+            }
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString();
+            }
+
+            // Utility methods for error handling
+            showError(message) {
+                const errorDiv = document.getElementById('error-message');
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            hideError() {
+                const errorDiv = document.getElementById('error-message');
+                if (errorDiv) {
+                    errorDiv.style.display = 'none';
+                }
+            }
+
+            // Admin actions for Vercel Functions
+            async resendEmail(leadId) {
+                try {
+                    const response = await fetch('/api/admin/dashboard', {
+                        method: 'POST',
+                        headers: this.authHeaders,
+                        body: JSON.stringify({
+                            action: 'resend_email',
+                            leadId: leadId
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Email queued for resending');
+                    } else {
+                        alert('Failed to resend email: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+
+            async rerunAudit(leadId) {
+                try {
+                    const response = await fetch('/api/admin/dashboard', {
+                        method: 'POST',
+                        headers: this.authHeaders,
+                        body: JSON.stringify({
+                            action: 'rerun_audit',
+                            leadId: leadId
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Audit queued for reprocessing');
+                    } else {
+                        alert('Failed to rerun audit: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+
+            // Settings management
+            loadSettings() {
+                const saved = localStorage.getItem('okha_admin_settings');
+                return saved ? JSON.parse(saved) : {
+                    storageMethod: 'vercel',
+                    notificationEmail: '',
+                    autoScoring: true
+                };
+            }
+
+            saveSettings() {
+                const settings = {
+                    storageMethod: 'vercel',
+                    notificationEmail: document.getElementById('notification-email').value,
+                    autoScoring: document.getElementById('auto-scoring').checked
+                };
+
+                localStorage.setItem('okha_admin_settings', JSON.stringify(settings));
+                alert('Settings saved successfully!');
+            }
+
+            toggleStorageConfig(method) {
+                // Not needed for Vercel setup
+            }
+
+            // Analytics functions
+            async loadAnalyticsData() {
+                try {
+                    const response = await fetch('/api/analytics/google-data', {
+                        headers: this.authHeaders
+                    });
+
+                    if (response.ok) {
+                        const analyticsData = await response.json();
+                        this.renderAnalytics(analyticsData.data);
+                    } else {
+                        throw new Error('Failed to load analytics data');
+                    }
+                } catch (error) {
+                    console.error('Analytics load error:', error);
+                    this.renderAnalyticsError();
+                }
+            }
+
+            renderAnalytics(data) {
+                const content = document.getElementById('analytics-content');
+                
+                const ga = data.googleAnalytics || {};
+                const website = data.websitePerformance || {};
+                const conversion = data.conversionMetrics || {};
+
+                content.innerHTML = `
+                    <!-- Website Performance Metrics -->
+                    <div style="margin-bottom: var(--space-2xl);">
+                        <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg);">🚀 Website Performance</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" style="color: ${this.getScoreColor(website.averageHealthScore || 0)}">${website.averageHealthScore || 0}</div>
+                                <div class="stat-label">Avg Health Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${website.averageLoadTime || 0}s</div>
+                                <div class="stat-label">Avg Load Time</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${website.totalAudits || 0}</div>
+                                <div class="stat-label">Audits Completed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">$${website.trends?.revenueImpact?.toLocaleString() || 0}</div>
+                                <div class="stat-label">Revenue Impact</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Analytics Metrics -->
+                    <div style="margin-bottom: var(--space-2xl);">
+                        <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg);">📈 Google Analytics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">${ga.pageViews?.total?.toLocaleString() || 0}</div>
+                                <div class="stat-label">Total Page Views</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${ga.pageViews?.unique?.toLocaleString() || 0}</div>
+                                <div class="stat-label">Unique Visitors</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${ga.conversionEvents?.conversionRate || 0}%</div>
+                                <div class="stat-label">Form Conversion Rate</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${ga.audienceInsights?.avgSessionDuration || 0}s</div>
+                                <div class="stat-label">Avg Session Duration</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conversion Funnel -->
+                    <div style="margin-bottom: var(--space-2xl);">
+                        <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg);">🎯 Conversion Funnel</h3>
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                            ${this.renderConversionFunnel(conversion.conversionFunnel)}
+                        </div>
+                    </div>
+
+                    <!-- Top Pages Performance -->
+                    <div style="margin-bottom: var(--space-2xl);">
+                        <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg);">📄 Top Performing Pages</h3>
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                            ${this.renderTopPages(ga.topPages)}
+                        </div>
+                    </div>
+
+                    <!-- Traffic Sources -->
+                    <div style="margin-bottom: var(--space-2xl);">
+                        <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg);">🌐 Traffic Sources</h3>
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                            ${this.renderTrafficSources(ga.trafficSources)}
+                        </div>
+                    </div>
+
+                    <!-- Business Type Performance -->
+                    <div style="margin-bottom: var(--space-2xl);">
+                        <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg);">🏢 Business Type Performance</h3>
+                        <div style="background: var(--white); padding: var(--space-xl); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                            ${this.renderBusinessTypePerformance(conversion.businessTypePerformance)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderAnalyticsError() {
+                const content = document.getElementById('analytics-content');
+                content.innerHTML = `
+                    <div style="text-align: center; padding: var(--space-2xl); color: var(--dark-600);">
+                        <p>❌ Unable to load analytics data</p>
+                        <p style="font-size: 0.9rem; margin-top: var(--space-md);">Check your authentication and try again</p>
+                    </div>
+                `;
+            }
+
+            renderConversionFunnel(funnel) {
+                if (!funnel) return '<p>No conversion data available</p>';
+                
+                return `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${funnel.formSubmissions || 0}</div>
+                            <div style="color: var(--dark-600);">Form Submissions</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${funnel.auditsCompleted || 0}</div>
+                            <div style="color: var(--dark-600);">Audits Completed</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${funnel.emailsDelivered || 0}</div>
+                            <div style="color: var(--dark-600);">Emails Delivered</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: ${this.getScoreColor(funnel.conversionRate || 0)};">${funnel.conversionRate || 0}%</div>
+                            <div style="color: var(--dark-600);">Conversion Rate</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderTopPages(pages) {
+                if (!pages || pages.length === 0) return '<p>No page data available</p>';
+                
+                return `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--gray-200);">
+                                <th style="text-align: left; padding: var(--space-md);">Page</th>
+                                <th style="text-align: right; padding: var(--space-md);">Views</th>
+                                <th style="text-align: right; padding: var(--space-md);">Conversion Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pages.map(page => `
+                                <tr style="border-bottom: 1px solid var(--gray-200);">
+                                    <td style="padding: var(--space-md);">${page.page}</td>
+                                    <td style="text-align: right; padding: var(--space-md);">${page.views.toLocaleString()}</td>
+                                    <td style="text-align: right; padding: var(--space-md); color: ${this.getScoreColor(page.conversionRate * 20)};">${page.conversionRate}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            renderTrafficSources(sources) {
+                if (!sources) return '<p>No traffic source data available</p>';
+                
+                return `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-lg);">
+                        ${Object.entries(sources).map(([source, percentage]) => `
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">${percentage}%</div>
+                                <div style="color: var(--dark-600); text-transform: capitalize;">${source}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderBusinessTypePerformance(performance) {
+                if (!performance) return '<p>No business type data available</p>';
+                
+                return `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--gray-200);">
+                                <th style="text-align: left; padding: var(--space-md);">Business Type</th>
+                                <th style="text-align: right; padding: var(--space-md);">Total Leads</th>
+                                <th style="text-align: right; padding: var(--space-md);">Completed</th>
+                                <th style="text-align: right; padding: var(--space-md);">Conversion Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(performance).map(([type, data]) => `
+                                <tr style="border-bottom: 1px solid var(--gray-200);">
+                                    <td style="padding: var(--space-md); text-transform: capitalize;">${type.replace('-', ' ')}</td>
+                                    <td style="text-align: right; padding: var(--space-md);">${data.total}</td>
+                                    <td style="text-align: right; padding: var(--space-md);">${data.emailsSent}</td>
+                                    <td style="text-align: right; padding: var(--space-md); color: ${this.getScoreColor(data.conversionRate)};">${data.conversionRate}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            getScoreColor(score) {
+                if (score >= 80) return '#27ae60';
+                if (score >= 60) return '#f39c12';
+                return '#e74c3c';
+            }
+        }
+
+        // Global functions
+        async function refreshData() {
+            try {
+                await admin.loadDashboardData();
+                admin.hideError();
+            } catch (error) {
+                admin.showError('Failed to refresh data: ' + error.message);
+            }
+        }
+
+        function exportLeads() {
+            admin.exportLeads();
+        }
+
+        async function loadAnalyticsData() {
+            try {
+                await admin.loadAnalyticsData();
+                admin.hideError();
+            } catch (error) {
+                admin.showError('Failed to load analytics data: ' + error.message);
+            }
+        }
+
+        // Initialize admin dashboard
+        const admin = new OkhaAdmin();
+
+        // Integration with existing audit form
+        // This will capture form submissions and add them to the admin dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on a page with the audit form
+            const auditForm = document.getElementById('auditForm');
+            if (auditForm) {
+                auditForm.addEventListener('submit', function(e) {
+                    // Don't prevent default - let form submit normally
+                    // But also capture the data for admin dashboard
+                    
+                    setTimeout(() => {
+                        const formData = new FormData(auditForm);
+                        const leadData = {
+                            id: Date.now().toString(),
+                            businessName: formData.get('businessName'),
+                            website: formData.get('website'),
+                            firstName: formData.get('firstName'),
+                            lastName: formData.get('lastName'),
+                            email: formData.get('email'),
+                            phone: formData.get('phone'),
+                            businessType: formData.get('businessType'),
+                            mainGoal: formData.get('mainGoal'),
+                            currentProblem: formData.get('currentProblem'),
+                            monthlyVisitors: formData.get('monthlyVisitors'),
+                            status: 'new',
+                            date: new Date().toISOString(),
+                            notes: []
+                        };
+
+                        // Add to admin leads
+                        const existingLeads = JSON.parse(localStorage.getItem('okha_leads') || '[]');
+                        existingLeads.push(leadData);
+                        localStorage.setItem('okha_leads', JSON.stringify(existingLeads));
+                    }, 100);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

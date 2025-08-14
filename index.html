@@ -260,6 +260,93 @@ Find Out What's Broken
         </div>
     </footer>
 
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        
+        // Replace GA_MEASUREMENT_ID with your actual Google Analytics 4 Measurement ID
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            // Enhanced ecommerce and conversion tracking
+            send_page_view: true,
+            allow_google_signals: true,
+            allow_ad_personalization_signals: true,
+            // Custom parameters for lead tracking
+            custom_map: {
+                'custom_parameter_1': 'business_type',
+                'custom_parameter_2': 'lead_value',
+                'custom_parameter_3': 'audit_score'
+            }
+        });
+
+        // Define custom events for better tracking
+        function trackAuditFormStart() {
+            gtag('event', 'form_start', {
+                'event_category': 'engagement',
+                'event_label': 'audit_form',
+                'form_name': 'website_audit'
+            });
+        }
+
+        function trackAuditFormSubmit(businessType, leadValue = 2497) {
+            gtag('event', 'generate_lead', {
+                'event_category': 'conversion',
+                'event_label': 'audit_request',
+                'business_type': businessType,
+                'currency': 'USD',
+                'value': leadValue
+            });
+        }
+
+        function trackAuditComplete(score, businessType) {
+            gtag('event', 'audit_completed', {
+                'event_category': 'engagement',
+                'event_label': 'audit_finished',
+                'audit_score': score,
+                'business_type': businessType
+            });
+        }
+
+        function trackEmailSent(leadId, businessType) {
+            gtag('event', 'email_sent', {
+                'event_category': 'marketing',
+                'event_label': 'audit_report',
+                'lead_id': leadId,
+                'business_type': businessType
+            });
+        }
+
+        function trackPageEngagement(action, location) {
+            gtag('event', action, {
+                'event_category': 'engagement',
+                'page_location': location,
+                'engagement_time_msec': Date.now() - window.pageStartTime
+            });
+        }
+
+        // Track page load time
+        window.pageStartTime = Date.now();
+        window.addEventListener('load', function() {
+            const loadTime = Date.now() - window.pageStartTime;
+            gtag('event', 'page_load_time', {
+                'event_category': 'performance',
+                'value': loadTime,
+                'metric_value': loadTime
+            });
+        });
+    </script>
+
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="GOOGLE_SEARCH_CONSOLE_VERIFICATION_CODE" />
+
     <script src="script.js"></script>
+    
+    <!-- Vercel Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

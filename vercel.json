@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "api/submit-audit.js": {
+      "maxDuration": 30
+    },
+    "api/process-audit.js": {
+      "maxDuration": 60
+    },
+    "api/send-email.js": {
+      "maxDuration": 30
+    },
+    "api/admin/dashboard.js": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/process-queues",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

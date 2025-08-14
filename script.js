@@ -322,75 +322,254 @@ function showSuccess(message) {
     }
 }
 
-// Simulate API call - replace with actual implementation
+// Submit audit request to Vercel Function
 async function submitAuditRequest(data) {
-    // This is where you would integrate with your backend or email service
-    // For now, we'll simulate a successful submission
-    
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            // Log the submission data (remove in production)
-            console.log('Audit request submitted:', data);
-            
-            // Store in localStorage for demo purposes
-            localStorage.setItem('auditRequest', JSON.stringify(data));
-            
-            resolve({ success: true, message: 'Audit request submitted successfully' });
-        }, 2000);
-    });
-}
+    try {
+        const response = await fetch('/api/submit-audit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
 
-// Analytics and tracking functions
-function trackEvent(eventName, properties = {}) {
-    // Add your analytics tracking code here (Google Analytics, Mixpanel, etc.)
-    console.log('Event tracked:', eventName, properties);
-    
-    // Example Google Analytics 4 tracking
-    if (typeof gtag !== 'undefined') {
-        gtag('event', eventName, properties);
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Submission failed');
+        }
+
+        // Track successful submission
+        trackEvent('audit_submitted', {
+            business_type: data.businessType,
+            main_goal: data.mainGoal,
+            lead_id: result.leadId
+        });
+
+        return result;
+
+    } catch (error) {
+        console.error('Audit submission error:', error);
+        
+        // Track failed submission
+        trackEvent('audit_submission_failed', {
+            error: error.message,
+            business_type: data.businessType
+        });
+
+        throw error;
     }
 }
 
-// Track form interactions
+// Enhanced Analytics and tracking functions
+function trackEvent(eventName, properties = {}) {
+    // Vercel Analytics tracking
+    if (window.va && typeof window.va.track === 'function') {
+        window.va.track(eventName, properties);
+    }
+    
+    // Google Analytics 4 tracking with enhanced parameters
+    if (typeof gtag !== 'undefined') {
+        // Map custom events to GA4 recommended events
+        switch(eventName) {
+            case 'form_started':
+                if (typeof trackAuditFormStart === 'function') {
+                    trackAuditFormStart();
+                }
+                break;
+            case 'form_submitted':
+                if (typeof trackAuditFormSubmit === 'function') {
+                    trackAuditFormSubmit(properties.business_type, properties.lead_value);
+                }
+                break;
+            case 'audit_completed':
+                if (typeof trackAuditComplete === 'function') {
+                    trackAuditComplete(properties.audit_score, properties.business_type);
+                }
+                break;
+            case 'email_sent':
+                if (typeof trackEmailSent === 'function') {
+                    trackEmailSent(properties.lead_id, properties.business_type);
+                }
+                break;
+            default:
+                gtag('event', eventName, properties);
+        }
+    }
+    
+    // Console log for debugging
+    console.log('Event tracked:', eventName, properties);
+}
+
+// Enhanced form tracking with Google Analytics
+function trackFormInteraction(action, elementType = '', value = '') {
+    trackEvent('form_interaction', {
+        'interaction_type': action,
+        'element_type': elementType,
+        'form_value': value,
+        'timestamp': Date.now()
+    });
+}
+
+// Track scroll depth for engagement
+function trackScrollDepth() {
+    let maxScroll = 0;
+    let scrollTimer;
+    
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function() {
+            const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+            
+            if (scrollPercent > maxScroll) {
+                maxScroll = scrollPercent;
+                
+                // Track milestone scroll depths
+                if (scrollPercent >= 25 && maxScroll < 25) {
+                    trackEvent('scroll_depth', { 'percent': 25 });
+                } else if (scrollPercent >= 50 && maxScroll < 50) {
+                    trackEvent('scroll_depth', { 'percent': 50 });
+                } else if (scrollPercent >= 75 && maxScroll < 75) {
+                    trackEvent('scroll_depth', { 'percent': 75 });
+                } else if (scrollPercent >= 90 && maxScroll < 90) {
+                    trackEvent('scroll_depth', { 'percent': 90 });
+                }
+            }
+        }, 250);
+    });
+}
+
+// Track time on page
+function trackTimeOnPage() {
+    let startTime = Date.now();
+    let tracked30s = false;
+    let tracked60s = false;
+    let tracked180s = false;
+    
+    setInterval(function() {
+        const timeOnPage = Date.now() - startTime;
+        
+        if (timeOnPage >= 30000 && !tracked30s) {
+            trackEvent('time_on_page', { 'seconds': 30 });
+            tracked30s = true;
+        } else if (timeOnPage >= 60000 && !tracked60s) {
+            trackEvent('time_on_page', { 'seconds': 60 });
+            tracked60s = true;
+        } else if (timeOnPage >= 180000 && !tracked180s) {
+            trackEvent('time_on_page', { 'seconds': 180 });
+            tracked180s = true;
+        }
+    }, 5000);
+}
+
+// Enhanced form and page tracking
 document.addEventListener('DOMContentLoaded', function() {
-    // Track form start
+    // Initialize enhanced tracking
+    trackScrollDepth();
+    trackTimeOnPage();
+    
+    // Track form interactions with detailed analytics
     const auditForm = document.getElementById('auditForm');
     if (auditForm) {
         let formStarted = false;
+        let formData = {};
         
-        auditForm.addEventListener('input', function() {
+        // Track form start
+        auditForm.addEventListener('input', function(e) {
             if (!formStarted) {
                 trackEvent('form_started', {
-                    form_name: 'website_audit'
+                    form_name: 'website_audit',
+                    first_field: e.target.name || e.target.id
                 });
                 formStarted = true;
             }
+            
+            // Track individual field interactions
+            trackFormInteraction('field_focus', e.target.type, e.target.name);
         });
         
-        // Track form submission
-        auditForm.addEventListener('submit', function() {
+        // Track form field completion
+        auditForm.addEventListener('change', function(e) {
+            if (e.target.value && e.target.value.trim() !== '') {
+                formData[e.target.name] = e.target.value;
+                trackFormInteraction('field_completed', e.target.type, e.target.name);
+            }
+        });
+        
+        // Track form submission with business intelligence
+        auditForm.addEventListener('submit', function(e) {
+            const businessType = formData.businessType || 'unknown';
+            const leadValue = calculateLeadValue(businessType);
+            
             trackEvent('form_submitted', {
-                form_name: 'website_audit'
+                form_name: 'website_audit',
+                business_type: businessType,
+                lead_value: leadValue,
+                fields_completed: Object.keys(formData).length
             });
         });
     }
     
-    // Track page views
+    // Track page views with enhanced data
     trackEvent('page_view', {
         page_title: document.title,
-        page_path: window.location.pathname
+        page_path: window.location.pathname,
+        page_location: window.location.href,
+        referrer: document.referrer
     });
     
-    // Track button clicks
-    document.querySelectorAll('.btn').forEach(button => {
+    // Track CTA button clicks with position tracking
+    document.querySelectorAll('.btn').forEach((button, index) => {
         button.addEventListener('click', function() {
-            trackEvent('button_click', {
+            trackEvent('cta_click', {
                 button_text: this.textContent.trim(),
-                button_url: this.href || null
+                button_url: this.href || null,
+                button_position: index + 1,
+                section: getButtonSection(this)
             });
         });
     });
+    
+    // Track scroll to form
+    const formSection = document.querySelector('#audit-form');
+    if (formSection) {
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    trackEvent('form_viewed', {
+                        form_name: 'website_audit',
+                        scroll_depth: Math.round((window.scrollY / document.body.scrollHeight) * 100)
+                    });
+                    observer.unobserve(entry.target); // Only track once
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        observer.observe(formSection);
+    }
 });
+
+// Helper functions for analytics
+function calculateLeadValue(businessType) {
+    const leadValues = {
+        'restaurant': 2000,
+        'healthcare': 5000,
+        'professional-services': 3500,
+        'home-services': 3000,
+        'automotive': 2500,
+        'retail': 1500,
+        'other': 2497
+    };
+    return leadValues[businessType] || leadValues['other'];
+}
+
+function getButtonSection(button) {
+    const section = button.closest('section');
+    if (section) {
+        return section.className || section.id || 'unknown';
+    }
+    return 'header';
+}
 
 // Utility functions
 function formatWebsiteUrl(url) {

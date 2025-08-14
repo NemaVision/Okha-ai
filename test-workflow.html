@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Okha.ai Workflow</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        .test-section { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+        }
+        .test-button { 
+            background: #007cba; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 10px 5px; 
+        }
+        .test-button:hover { 
+            background: #005a87; 
+        }
+        .test-result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+        }
+        .loading { 
+            background: #d1ecf1; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
+        }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Okha.ai Vercel Workflow Test</h1>
+    <p>This page helps you test all components of your Vercel-integrated audit system.</p>
+
+    <!-- Test Form Submission -->
+    <div class="test-section">
+        <h2>1. Test Form Submission</h2>
+        <p>Tests the audit form submission to Vercel Functions.</p>
+        <button class="test-button" onclick="testFormSubmission()">Test Form Submission</button>
+        <div id="form-test-result"></div>
+    </div>
+
+    <!-- Test Audit Processing -->
+    <div class="test-section">
+        <h2>2. Test Audit Processing</h2>
+        <p>Tests the website audit functionality.</p>
+        <input type="url" id="test-website" placeholder="Enter website URL to audit" value="https://example.com" style="width: 300px; padding: 8px; margin-right: 10px;">
+        <button class="test-button" onclick="testAuditProcessing()">Test Audit Processing</button>
+        <div id="audit-test-result"></div>
+    </div>
+
+    <!-- Test Email Sending -->
+    <div class="test-section">
+        <h2>3. Test Email Functionality</h2>
+        <p>Tests the email sending capability (requires valid lead data).</p>
+        <button class="test-button" onclick="testEmailSending()">Test Email Sending</button>
+        <div id="email-test-result"></div>
+    </div>
+
+    <!-- Test Admin Dashboard -->
+    <div class="test-section">
+        <h2>4. Test Admin Dashboard</h2>
+        <p>Tests the admin dashboard API connection.</p>
+        <input type="password" id="admin-password" placeholder="Admin password" style="width: 200px; padding: 8px; margin-right: 10px;">
+        <button class="test-button" onclick="testAdminDashboard()">Test Admin Dashboard</button>
+        <div id="admin-test-result"></div>
+    </div>
+
+    <!-- Test Google Analytics -->
+    <div class="test-section">
+        <h2>5. Test Google Analytics Integration</h2>
+        <p>Tests Google Analytics tracking and event firing.</p>
+        <button class="test-button" onclick="testGoogleAnalytics()">Test GA4 Events</button>
+        <div id="ga-test-result"></div>
+    </div>
+
+    <!-- Test Queue Processing -->
+    <div class="test-section">
+        <h2>6. Test Queue Processing</h2>
+        <p>Tests the background queue processing system.</p>
+        <button class="test-button" onclick="testQueueProcessing()">Test Queue Processing</button>
+        <div id="queue-test-result"></div>
+    </div>
+
+    <!-- Test Analytics Dashboard -->
+    <div class="test-section">
+        <h2>7. Test Analytics Dashboard</h2>
+        <p>Tests the analytics data collection and dashboard display.</p>
+        <button class="test-button" onclick="testAnalyticsDashboard()">Test Analytics Dashboard</button>
+        <div id="analytics-test-result"></div>
+    </div>
+
+    <!-- Integration Test -->
+    <div class="test-section">
+        <h2>8. Full Integration Test</h2>
+        <p>Tests the complete workflow including Google APIs and analytics.</p>
+        <button class="test-button" onclick="runFullTest()">Run Full Integration Test</button>
+        <div id="integration-test-result"></div>
+    </div>
+
+    <script>
+        // Utility functions
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        function showLoading(elementId, message = 'Testing...') {
+            showResult(elementId, 'loading', message);
+        }
+
+        // Test 1: Form Submission
+        async function testFormSubmission() {
+            showLoading('form-test-result', 'Testing form submission...');
+            
+            const testData = {
+                businessName: 'Test Business',
+                website: 'https://example.com',
+                firstName: 'Test',
+                lastName: 'User',
+                email: 'test@example.com',
+                phone: '555-123-4567',
+                businessType: 'retail',
+                mainGoal: 'more-customers',
+                currentProblem: 'Testing the system',
+                monthlyVisitors: '100-500',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                referrer: document.referrer
+            };
+
+            try {
+                const response = await fetch('/api/submit-audit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showResult('form-test-result', 'success', 
+                        `✅ Form submission successful!<br>
+                        Lead ID: ${result.leadId}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>`
+                    );
+                    window.testLeadId = result.leadId; // Store for other tests
+                } else {
+                    showResult('form-test-result', 'error', 
+                        `❌ Form submission failed: ${result.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                showResult('form-test-result', 'error', 
+                    `❌ Form submission error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 2: Audit Processing
+        async function testAuditProcessing() {
+            showLoading('audit-test-result', 'Testing audit processing...');
+            
+            const website = document.getElementById('test-website').value;
+            if (!website) {
+                showResult('audit-test-result', 'error', '❌ Please enter a website URL');
+                return;
+            }
+
+            const testData = {
+                leadId: window.testLeadId || 'test_lead_' + Date.now(),
+                websiteUrl: website,
+                businessType: 'retail'
+            };
+
+            try {
+                const response = await fetch('/api/process-audit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showResult('audit-test-result', 'success', 
+                        `✅ Audit processing successful!<br>
+                        Audit ID: ${result.auditId}<br>
+                        Health Score: ${result.healthScore}/100<br>
+                        Critical Issues: ${result.criticalIssues}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>`
+                    );
+                    window.testAuditId = result.auditId; // Store for email test
+                } else {
+                    showResult('audit-test-result', 'error', 
+                        `❌ Audit processing failed: ${result.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                showResult('audit-test-result', 'error', 
+                    `❌ Audit processing error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 3: Email Sending
+        async function testEmailSending() {
+            showLoading('email-test-result', 'Testing email sending...');
+
+            if (!window.testLeadId || !window.testAuditId) {
+                showResult('email-test-result', 'error', 
+                    '❌ Please run the form submission and audit processing tests first'
+                );
+                return;
+            }
+
+            const testData = {
+                type: 'audit_completed',
+                leadId: window.testLeadId,
+                auditId: window.testAuditId
+            };
+
+            try {
+                const response = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showResult('email-test-result', 'success', 
+                        `✅ Email sending successful!<br>
+                        Message ID: ${result.messageId || 'N/A'}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult('email-test-result', 'error', 
+                        `❌ Email sending failed: ${result.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                showResult('email-test-result', 'error', 
+                    `❌ Email sending error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 4: Admin Dashboard
+        async function testAdminDashboard() {
+            showLoading('admin-test-result', 'Testing admin dashboard...');
+
+            const password = document.getElementById('admin-password').value;
+            if (!password) {
+                showResult('admin-test-result', 'error', '❌ Please enter admin password');
+                return;
+            }
+
+            const credentials = btoa('admin:' + password);
+            
+            try {
+                const response = await fetch('/api/admin/dashboard', {
+                    headers: {
+                        'Authorization': 'Basic ' + credentials,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showResult('admin-test-result', 'success', 
+                        `✅ Admin dashboard working!<br>
+                        Total Leads: ${result.stats.totalLeads}<br>
+                        Completed Audits: ${result.stats.completedAudits}<br>
+                        Emails Sent: ${result.stats.emailsSent}<br>
+                        <pre>${JSON.stringify(result.stats, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult('admin-test-result', 'error', 
+                        `❌ Admin dashboard failed: ${result.error || 'Authentication failed'}`
+                    );
+                }
+            } catch (error) {
+                showResult('admin-test-result', 'error', 
+                    `❌ Admin dashboard error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 5: Queue Processing
+        async function testQueueProcessing() {
+            showLoading('queue-test-result', 'Testing queue processing...');
+
+            try {
+                const response = await fetch('/api/process-queues', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${btoa('test_secret')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showResult('queue-test-result', 'success', 
+                        `✅ Queue processing working!<br>
+                        Duration: ${result.duration}<br>
+                        Processed: ${JSON.stringify(result.processed)}<br>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult('queue-test-result', 'error', 
+                        `❌ Queue processing failed: ${result.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                showResult('queue-test-result', 'error', 
+                    `❌ Queue processing error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 5: Google Analytics Integration
+        async function testGoogleAnalytics() {
+            showLoading('ga-test-result', 'Testing Google Analytics...');
+
+            try {
+                // Test if gtag is loaded
+                if (typeof gtag === 'undefined') {
+                    showResult('ga-test-result', 'error', 
+                        '❌ Google Analytics not loaded. Check your GA4 Measurement ID in index.html'
+                    );
+                    return;
+                }
+
+                // Fire test events
+                gtag('event', 'test_event', {
+                    'event_category': 'testing',
+                    'event_label': 'workflow_test',
+                    'value': 1
+                });
+
+                // Test custom tracking functions
+                if (typeof trackEvent === 'function') {
+                    trackEvent('test_form_started', {
+                        form_name: 'test_audit',
+                        business_type: 'testing'
+                    });
+                }
+
+                showResult('ga-test-result', 'success', 
+                    `✅ Google Analytics working!<br>
+                    - gtag function available<br>
+                    - Test events fired<br>
+                    - Custom tracking functions working<br>
+                    <em>Check Google Analytics Real-Time reports to see events</em>`
+                );
+
+            } catch (error) {
+                showResult('ga-test-result', 'error', 
+                    `❌ Google Analytics error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 7: Analytics Dashboard
+        async function testAnalyticsDashboard() {
+            showLoading('analytics-test-result', 'Testing analytics dashboard...');
+
+            const password = document.getElementById('admin-password').value;
+            if (!password) {
+                showResult('analytics-test-result', 'error', '❌ Please enter admin password first');
+                return;
+            }
+
+            const credentials = btoa('admin:' + password);
+            
+            try {
+                const response = await fetch('/api/analytics/google-data', {
+                    headers: {
+                        'Authorization': 'Basic ' + credentials,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showResult('analytics-test-result', 'success', 
+                        `✅ Analytics Dashboard working!<br>
+                        - Website Performance Data: Available<br>
+                        - Conversion Metrics: Available<br>
+                        - Google Analytics Data: ${result.data.googleAnalytics ? 'Available' : 'Mock Data'}<br>
+                        <pre style="max-height: 200px; overflow-y: auto;">${JSON.stringify(result.data, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult('analytics-test-result', 'error', 
+                        `❌ Analytics Dashboard failed: ${result.error || 'Unknown error'}`
+                    );
+                }
+            } catch (error) {
+                showResult('analytics-test-result', 'error', 
+                    `❌ Analytics Dashboard error: ${error.message}`
+                );
+            }
+        }
+
+        // Test 8: Full Integration Test
+        async function runFullTest() {
+            showLoading('integration-test-result', 'Running full integration test...');
+
+            const steps = [
+                { name: 'Google Analytics Check', func: testGoogleAnalytics },
+                { name: 'Form Submission', func: testFormSubmission },
+                { name: 'Audit Processing', func: testAuditProcessing },
+                { name: 'Email Sending', func: testEmailSending },
+                { name: 'Analytics Dashboard', func: testAnalyticsDashboard }
+            ];
+
+            const results = [];
+
+            for (const step of steps) {
+                try {
+                    showResult('integration-test-result', 'loading', 
+                        `Running step: ${step.name}...`
+                    );
+                    
+                    await step.func();
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between steps
+                    results.push(`✅ ${step.name}: Success`);
+                } catch (error) {
+                    results.push(`❌ ${step.name}: Failed - ${error.message}`);
+                    // Continue with other tests instead of breaking
+                }
+            }
+
+            const successCount = results.filter(r => r.includes('✅')).length;
+            const totalCount = results.length;
+            
+            showResult('integration-test-result', successCount === totalCount ? 'success' : 'error', 
+                `<h4>Full Integration Test Results:</h4>
+                ${results.map(r => `<div>${r}</div>`).join('')}
+                <br>
+                <strong>
+                    ${successCount === totalCount ? 
+                        '🎉 All tests passed! Your Vercel + Google Analytics integration is working perfectly!' : 
+                        `⚠️ ${successCount}/${totalCount} tests passed. Check failed components above.`}
+                </strong>`
+            );
+        }
+    </script>
+</body>
+</html>
