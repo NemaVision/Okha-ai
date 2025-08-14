@@ -262,10 +262,13 @@ nav {
     border-radius: var(--radius-md);
     transition: var(--transition-fast);
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     justify-content: center;
     align-items: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
 }
 
 .mobile-menu:hover {
@@ -1058,11 +1061,13 @@ footer a:hover {
         height: 100vh;
         background: var(--white);
         flex-direction: column;
-        padding: var(--space-lg) var(--space-md);
+        padding: var(--space-md) var(--space-sm);
         box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
         z-index: 1001;
         overflow-y: auto;
         transition: right 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        justify-content: flex-start;
+        align-items: stretch;
     }
 
     .nav-links.active {
@@ -1071,10 +1076,11 @@ footer a:hover {
     }
     
     .nav-links li {
-        margin-bottom: var(--space-xs);
+        margin-bottom: 2px;
         opacity: 0;
         transform: translateX(30px);
         transition: all 0.3s ease;
+        width: 100%;
     }
     
     .nav-links.active li {
@@ -1091,19 +1097,25 @@ footer a:hover {
     .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
     
     .nav-links li:last-child {
-        margin-bottom: var(--space-sm);
+        margin-bottom: 2px;
     }
     
     .nav-links a {
-        padding: var(--space-sm) var(--space-sm);
-        border-radius: var(--radius-md);
+        padding: 12px var(--space-sm);
+        border-radius: var(--radius-sm);
         display: block;
         text-align: left;
         font-weight: 500;
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: var(--dark-700);
         transition: var(--transition-fast);
         border-left: 3px solid transparent;
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
     }
     
     .nav-links a:hover {
@@ -1117,10 +1129,11 @@ footer a:hover {
     .mobile-language-switcher {
         display: flex;
         justify-content: center;
-        gap: var(--space-sm);
-        padding: var(--space-md) var(--space-sm);
+        gap: var(--space-xs);
+        padding: var(--space-xs) var(--space-sm);
         border-top: 1px solid var(--gray-200);
-        margin-top: var(--space-sm);
+        margin-top: 4px;
+        margin-bottom: var(--space-sm);
     }
     
     .mobile-language-switcher a {

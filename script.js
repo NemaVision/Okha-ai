@@ -12,9 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     body.appendChild(overlay);
     
     if (mobileMenu && navLinks) {
-        // Toggle mobile menu
-        mobileMenu.addEventListener('click', function(e) {
+        // Toggle mobile menu with touch support
+        function handleMenuToggle(e) {
             e.preventDefault();
+            e.stopPropagation();
             const isActive = navLinks.classList.contains('active');
             
             if (isActive) {
@@ -22,7 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 openMobileMenu();
             }
-        });
+        }
+        
+        mobileMenu.addEventListener('click', handleMenuToggle);
+        mobileMenu.addEventListener('touchend', handleMenuToggle);
         
         // Open mobile menu function
         function openMobileMenu() {
@@ -42,11 +46,23 @@ document.addEventListener('DOMContentLoaded', function() {
             body.style.overflow = ''; // Restore scrolling
         }
         
-        // Close mobile menu when clicking on links
+        // Close mobile menu when clicking/touching on links
         const navMenuLinks = navLinks.querySelectorAll('a');
         navMenuLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                closeMobileMenu();
+            function handleLinkClick(e) {
+                // Add small delay for better touch feedback
+                setTimeout(() => {
+                    closeMobileMenu();
+                }, 100);
+            }
+            
+            link.addEventListener('click', handleLinkClick);
+            link.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                // Simulate click after touch for proper navigation
+                setTimeout(() => {
+                    link.click();
+                }, 50);
             });
         });
         
