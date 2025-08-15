@@ -1061,13 +1061,14 @@ footer a:hover {
         height: 100vh;
         background: var(--white);
         flex-direction: column;
-        padding: var(--space-md) var(--space-sm);
+        padding: 12px 8px;
         box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
         z-index: 1001;
         overflow-y: auto;
         transition: right 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         justify-content: flex-start;
         align-items: stretch;
+        border-left: 3px solid #ff0000;
     }
 
     .nav-links.active {
@@ -1076,7 +1077,7 @@ footer a:hover {
     }
     
     .nav-links li {
-        margin-bottom: 2px;
+        margin-bottom: 1px;
         opacity: 0;
         transform: translateX(30px);
         transition: all 0.3s ease;
@@ -1097,13 +1098,13 @@ footer a:hover {
     .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
     
     .nav-links li:last-child {
-        margin-bottom: 2px;
+        margin-bottom: 1px;
     }
     
     .nav-links a {
-        padding: 12px var(--space-sm);
+        padding: 8px 12px;
         border-radius: var(--radius-sm);
-        display: block;
+        display: flex;
         text-align: left;
         font-weight: 500;
         font-size: 0.95rem;
@@ -1111,8 +1112,7 @@ footer a:hover {
         transition: var(--transition-fast);
         border-left: 3px solid transparent;
         width: 100%;
-        min-height: 44px;
-        display: flex;
+        min-height: 40px;
         align-items: center;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
@@ -1130,9 +1130,9 @@ footer a:hover {
         display: flex;
         justify-content: center;
         gap: var(--space-xs);
-        padding: var(--space-xs) var(--space-sm);
+        padding: 6px 12px;
         border-top: 1px solid var(--gray-200);
-        margin-top: 4px;
+        margin-top: 2px;
         margin-bottom: var(--space-sm);
     }
     
