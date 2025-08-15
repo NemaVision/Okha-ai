@@ -1,5 +1,4 @@
 {
-  "_comment": "Mobile menu deployment trigger - Aug 15, 2025",
   "functions": {
     "api/submit-audit.js": {
       "maxDuration": 30
